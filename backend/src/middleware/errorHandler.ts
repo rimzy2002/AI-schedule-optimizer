@@ -19,6 +19,17 @@ export function errorHandler(
     return;
   }
 
+  if (err && typeof err === "object" && "name" in err) {
+    if (err.name === "NotFoundError") {
+      res.status(404).json({ error: "NotFound", message: (err as Error).message });
+      return;
+    }
+    if (err.name === "ValidationError") {
+      res.status(422).json({ error: "ValidationError", message: (err as Error).message });
+      return;
+    }
+  }
+
   console.error(err);
   res.status(500).json({ error: "InternalServerError" });
 }

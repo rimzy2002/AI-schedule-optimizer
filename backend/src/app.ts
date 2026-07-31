@@ -2,6 +2,7 @@ import express, { type Express } from "express";
 import cors from "cors";
 import { env } from "@/config/env.js";
 import { healthRouter } from "@/routes/health.route.js";
+import { eventsRouter } from "@/routes/events.route.js";
 import { errorHandler } from "@/middleware/errorHandler.js";
 
 /**
@@ -23,6 +24,7 @@ export function createApp(): Express {
   app.use(express.json({ limit: "1mb" }));
 
   app.use("/api", healthRouter);
+  app.use("/api/events", eventsRouter);
 
   // 404 handler — must come after all registered routes
   app.use((_req, res) => {
