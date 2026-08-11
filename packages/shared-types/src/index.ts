@@ -21,3 +21,9 @@ export const HealthCheckResponseSchema = z.object({
 export type HealthCheckResponse = z.infer<typeof HealthCheckResponseSchema>;
 
 export * from "./events.js";
+
+export interface UserSessionContext {
+  userId: string;
+  email: string;
+  timezone: string;
+}
