@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password_hash  String
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+
+  syllabi        Syllabus[]
+  calendarEvents CalendarEvent[]
+  studyBlocks    StudyBlock[]
+  focusSessions  FocusSession[]
+  focusMetrics   FocusMetric[]
+
+  @@map("users")
+}
+
+model Syllabus {
+  id          String   @id @default(uuid())
+  user_id     String
+  course_name String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  tasks       Task[]
+
+  @@map("syllabi")
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  syllabus_id String
+  title       String
+  deadline    DateTime?
+  weight      Float?
+  status      String   @default("pending")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  syllabus    Syllabus @relation(fields: [syllabus_id], references: [id], onDelete: Cascade)
+  studyBlocks StudyBlock[]
+
+  @@map("tasks")
+}
+
+model CalendarEvent {
+  id         String   @id @default(uuid())
+  user_id    String
+  title      String
+  start_time DateTime
+  end_time   DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("calendar_events")
+}
+
+model StudyBlock {
+  id         String   @id @default(uuid())
+  user_id    String
+  task_id    String?
+  title      String
+  start_time DateTime
+  end_time   DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  task       Task?    @relation(fields: [task_id], references: [id], onDelete: SetNull)
+  focusSessions FocusSession[]
+
+  @@map("study_blocks")
+}
+
+model FocusSession {
+  id             String   @id @default(uuid())
+  user_id        String
+  study_block_id String?
+  start_time     DateTime
+  end_time       DateTime?
+  created_at     DateTime @default(now())
+
+  user           User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  studyBlock     StudyBlock? @relation(fields: [study_block_id], references: [id], onDelete: SetNull)
+
+  @@map("focus_sessions")
+}
+
+model FocusMetric {
+  id         String   @id @default(uuid())
+  user_id    String
+  metric_key String
+  value      Float
+  created_at DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("focus_metrics")
+}
+
+model JobRecord {
+  id         String   @id @default(uuid())
+  status     String
+  logs       String?  @db.Text
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("job_records")
+}
