@@ -9,6 +9,7 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   jwtSecret: process.env.JWT_SECRET || 'super_secret_jwt_key_here',
+  googleGenAiApiKey: process.env.GOOGLE_GENAI_API_KEY || '',
   database: {
     host: process.env.DATABASE_HOST || 'localhost',
     port: parseInt(process.env.DATABASE_PORT || '3306', 10),
