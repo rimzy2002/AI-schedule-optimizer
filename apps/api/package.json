@@ -9,11 +9,14 @@
   },
   "dependencies": {
     "@ai-schedule-optimizer/database": "*",
+    "@google/genai": "^2.16.0",
+    "bullmq": "^6.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "ioredis": "^5.4.1",
-    "mysql2": "^3.9.7"
+    "mysql2": "^3.9.7",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.17",
