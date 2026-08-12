@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { DashboardPage } from './pages/DashboardPage';
-import { PlaceholderPage } from './pages/PlaceholderPage';
+import { ImportSyllabusPage } from './pages/ImportSyllabusPage';
 
 export const App: React.FC = () => {
   return (
@@ -14,7 +14,7 @@ export const App: React.FC = () => {
         {/* Protected Routes (Mocked for now) */}
         <Route element={<AppLayout />}>
           <Route path="/" element={<DashboardPage />} />
-          <Route path="/import" element={<PlaceholderPage title="Import" />} />
+          <Route path="/import" element={<ImportSyllabusPage />} />
           <Route path="/review" element={<PlaceholderPage title="Review Courses" />} />
           <Route path="/schedule" element={<PlaceholderPage title="Schedule" />} />
           <Route path="/focus" element={<PlaceholderPage title="Focus Mode" />} />
