@@ -73,6 +73,7 @@ model StudyBlock {
   title      String
   start_time DateTime
   end_time   DateTime
+  status     String   @default("pending")
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
@@ -86,10 +87,16 @@ model StudyBlock {
 model FocusSession {
   id             String   @id @default(uuid())
   user_id        String
-  study_block_id String?
-  start_time     DateTime
-  end_time       DateTime?
-  created_at     DateTime @default(now())
+  study_block_id    String?
+  task_id           String?
+  start_time        DateTime
+  end_time          DateTime?
+  planned_minutes   Int
+  actual_minutes    Int      @default(0)
+  status            String   @default("ACTIVE")
+  paused_at         DateTime?
+  accumulated_pause Int      @default(0)
+  created_at        DateTime @default(now())
 
   user           User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
   studyBlock     StudyBlock? @relation(fields: [study_block_id], references: [id], onDelete: SetNull)

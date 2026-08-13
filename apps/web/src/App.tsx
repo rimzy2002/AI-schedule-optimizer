@@ -5,6 +5,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ImportSyllabusPage } from './pages/ImportSyllabusPage';
 import { ReviewTasksPage } from './pages/ReviewTasksPage';
 import { SchedulePage } from './pages/SchedulePage';
+import { FocusPage } from './pages/FocusPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 export const App: React.FC = () => {
   return (
@@ -19,7 +20,7 @@ export const App: React.FC = () => {
           <Route path="/import" element={<ImportSyllabusPage />} />
           <Route path="/review" element={<ReviewTasksPage />} />
           <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/focus" element={<PlaceholderPage title="Focus Mode" />} />
+          <Route path="/focus" element={<FocusPage />} />
           <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
         </Route>
       </Routes>

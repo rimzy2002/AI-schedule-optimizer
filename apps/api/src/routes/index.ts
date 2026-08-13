@@ -2,9 +2,11 @@ import { Router, Request, Response } from 'express';
 import { checkDatabaseConnection } from '../config/database';
 import { asyncHandler } from '../utils/asyncHandler';
 import authRoutes from './auth.routes';
-import syllabiRoutes from './syllabi.routes';
+import syllabusRoutes from './syllabus.routes';
 import taskRoutes from './task.routes';
 import scheduleRoutes from './schedule.routes';
+import dashboardRoutes from './dashboard.routes';
+import focusRoutes from './focus.routes';
 
 const router = Router();
 
@@ -26,8 +28,10 @@ router.get('/health/database', asyncHandler(async (req: Request, res: Response) 
 
 // API Routes
 router.use('/auth', authRoutes);
-router.use('/syllabi', syllabiRoutes);
+router.use('/syllabi', syllabusRoutes);
 router.use('/tasks', taskRoutes);
 router.use('/schedule', scheduleRoutes);
+router.use('/dashboard', dashboardRoutes);
+router.use('/focus', focusRoutes);
 
 export default router;
