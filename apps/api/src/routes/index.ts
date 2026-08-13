@@ -3,6 +3,8 @@ import { checkDatabaseConnection } from '../config/database';
 import { asyncHandler } from '../utils/asyncHandler';
 import authRoutes from './auth.routes';
 import syllabiRoutes from './syllabi.routes';
+import taskRoutes from './task.routes';
+import scheduleRoutes from './schedule.routes';
 
 const router = Router();
 
@@ -25,5 +27,7 @@ router.get('/health/database', asyncHandler(async (req: Request, res: Response) 
 // API Routes
 router.use('/auth', authRoutes);
 router.use('/syllabi', syllabiRoutes);
+router.use('/tasks', taskRoutes);
+router.use('/schedule', scheduleRoutes);
 
 export default router;
