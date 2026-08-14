@@ -1,4 +1,4 @@
-import { prisma } from '@ai-schedule-optimizer/database/src/client';
+import { prisma } from '@ai-schedule-optimizer/database';
 import { ScheduledBlock } from '../../algorithms/scheduling/backwardScheduler';
 
 export class StudyBlockService {

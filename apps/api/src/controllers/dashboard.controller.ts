@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '@ai-schedule-optimizer/database/src/client';
+import { prisma } from '@ai-schedule-optimizer/database';
 import { asyncHandler } from '../utils/asyncHandler';
 
 export const getTodayDashboard = asyncHandler(async (req: Request, res: Response) => {

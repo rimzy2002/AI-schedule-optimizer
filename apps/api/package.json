@@ -10,17 +10,21 @@
   "dependencies": {
     "@ai-schedule-optimizer/database": "*",
     "@google/genai": "^2.16.0",
+    "bcrypt": "^6.0.0",
     "bullmq": "^6.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.9.7",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.12.12",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5",

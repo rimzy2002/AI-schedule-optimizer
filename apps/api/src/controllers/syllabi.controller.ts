@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '@ai-schedule-optimizer/database/src/client';
+import { prisma } from '@ai-schedule-optimizer/database';
 import { syllabusQueue } from '../queues/syllabus.queue';
 import { extractSyllabusSchema } from '../schemas/syllabi.schema';
 import { asyncHandler } from '../utils/asyncHandler';

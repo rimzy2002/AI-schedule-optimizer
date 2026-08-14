@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { prisma } from '@ai-schedule-optimizer/database/src/client';
+import { prisma } from '@ai-schedule-optimizer/database';
 import { confirmTasksSchema } from '../schemas/task.schema';
 import { asyncHandler } from '../utils/asyncHandler';
 

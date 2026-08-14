@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { checkDatabaseConnection } from '../config/database';
 import { asyncHandler } from '../utils/asyncHandler';
 import authRoutes from './auth.routes';
-import syllabusRoutes from './syllabus.routes';
+import syllabusRoutes from './syllabi.routes';
 import taskRoutes from './task.routes';
 import scheduleRoutes from './schedule.routes';
 import dashboardRoutes from './dashboard.routes';

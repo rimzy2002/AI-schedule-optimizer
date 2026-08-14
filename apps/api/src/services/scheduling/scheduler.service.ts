@@ -1,4 +1,4 @@
-import { prisma } from '@ai-schedule-optimizer/database/src/client';
+import { prisma } from '@ai-schedule-optimizer/database';
 import { backwardSchedule, ScheduledBlock } from '../../algorithms/scheduling/backwardScheduler';
 import { SchedulableTask } from '../../algorithms/scheduling/calculatePriority';
 import { availabilityService } from './availability.service';
