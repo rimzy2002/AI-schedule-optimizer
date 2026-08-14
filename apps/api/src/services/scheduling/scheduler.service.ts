@@ -11,8 +11,15 @@ export class SchedulerService {
    */
   async generatePreview(userId: string, syllabusId: string) {
     const tasks = await prisma.task.findMany({
-      where: { syllabus_id: syllabusId }
+      where: { 
+        syllabus_id: syllabusId,
+        syllabus: { user_id: userId }
+      }
     });
+
+    if (tasks.length === 0) {
+      throw new Error('No tasks found or access denied');
+    }
 
     const schedulableTasks: SchedulableTask[] = tasks.map(t => ({
       id: t.id,

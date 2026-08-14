@@ -1,12 +1,27 @@
 import { Request, Response } from 'express';
 import { prisma } from '@ai-schedule-optimizer/database/src/client';
+import { startFocusSessionSchema } from '../schemas/focus.schema';
 import { asyncHandler } from '../utils/asyncHandler';
 
 const getUserId = () => 'user-1'; // Mock user
 
 export const startFocusSession = asyncHandler(async (req: Request, res: Response) => {
-  const { studyBlockId, taskId, plannedMinutes } = req.body;
+  const result = startFocusSessionSchema.safeParse(req.body);
+  if (!result.success) {
+    res.status(400).json({ error: 'Invalid input', details: result.error.format() });
+    return;
+  }
+
+  const { studyBlockId, taskId, plannedMinutes } = result.data;
   const userId = getUserId();
+
+  if (studyBlockId) {
+    const block = await prisma.studyBlock.findUnique({ where: { id: studyBlockId, user_id: userId } });
+    if (!block) {
+      res.status(404).json({ error: 'Study block not found or access denied' });
+      return;
+    }
+  }
 
   const session = await prisma.focusSession.create({
     data: {
@@ -24,8 +39,15 @@ export const startFocusSession = asyncHandler(async (req: Request, res: Response
 
 export const pauseFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = getUserId();
   
-  const session = await prisma.focusSession.update({
+  const session = await prisma.focusSession.findUnique({ where: { id, user_id: userId } });
+  if (!session) {
+    res.status(404).json({ error: 'Session not found or access denied' });
+    return;
+  }
+
+  const updatedSession = await prisma.focusSession.update({
     where: { id },
     data: {
       status: 'PAUSED',
@@ -33,15 +55,16 @@ export const pauseFocusSession = asyncHandler(async (req: Request, res: Response
     }
   });
 
-  res.json(session);
+  res.json(updatedSession);
 });
 
 export const resumeFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = getUserId();
   
-  const session = await prisma.focusSession.findUnique({ where: { id } });
+  const session = await prisma.focusSession.findUnique({ where: { id, user_id: userId } });
   if (!session || !session.paused_at) {
-    res.status(400).json({ error: 'Session not found or not paused' });
+    res.status(400).json({ error: 'Session not found, not owned, or not paused' });
     return;
   }
 
@@ -62,10 +85,11 @@ export const resumeFocusSession = asyncHandler(async (req: Request, res: Respons
 
 export const completeFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const userId = getUserId();
   
-  const session = await prisma.focusSession.findUnique({ where: { id } });
+  const session = await prisma.focusSession.findUnique({ where: { id, user_id: userId } });
   if (!session) {
-    res.status(404).json({ error: 'Session not found' });
+    res.status(404).json({ error: 'Session not found or access denied' });
     return;
   }
 
@@ -115,10 +139,12 @@ export const completeFocusSession = asyncHandler(async (req: Request, res: Respo
 
 export const getFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const session = await prisma.focusSession.findUnique({ where: { id } });
+  const userId = getUserId();
+
+  const session = await prisma.focusSession.findUnique({ where: { id, user_id: userId } });
   
   if (!session) {
-    res.status(404).json({ error: 'Session not found' });
+    res.status(404).json({ error: 'Session not found or access denied' });
     return;
   }
   

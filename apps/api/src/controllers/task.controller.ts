@@ -4,6 +4,9 @@ import { confirmTasksSchema } from '../schemas/task.schema';
 import { asyncHandler } from '../utils/asyncHandler';
 
 export const confirmTasks = asyncHandler(async (req: Request, res: Response) => {
+  // @ts-ignore
+  const userId = req.user?.id || 'user-1';
+
   const result = confirmTasksSchema.safeParse(req.body);
   if (!result.success) {
     res.status(400).json({ error: 'Invalid input', details: result.error.format() });
@@ -12,10 +15,16 @@ export const confirmTasks = asyncHandler(async (req: Request, res: Response) => 
 
   const { syllabusId, tasks } = result.data;
 
-  // Ensure syllabus exists
-  const syllabus = await prisma.syllabus.findUnique({ where: { id: syllabusId } });
+  // Ensure syllabus exists and belongs to the user
+  const syllabus = await prisma.syllabus.findUnique({ 
+    where: { 
+      id: syllabusId,
+      user_id: userId
+    } 
+  });
+  
   if (!syllabus) {
-    res.status(404).json({ error: 'Syllabus not found' });
+    res.status(404).json({ error: 'Syllabus not found or access denied' });
     return;
   }
 

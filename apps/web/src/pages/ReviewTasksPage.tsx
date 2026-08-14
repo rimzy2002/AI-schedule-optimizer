@@ -13,10 +13,10 @@ const mockTasks: ParsedTask[] = [
 export const ReviewTasksPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as { syllabusId?: string, parsedTasks?: ParsedTask[] } | null;
+  const state = location.state as { syllabusId?: string, proposedSyllabus?: ParsedTask[] } | null;
   
-  const syllabusId = state?.syllabusId || 'mock-syllabus-id';
-  const [tasks, setTasks] = useState<ParsedTask[]>(state?.parsedTasks || mockTasks);
+  const syllabusId = state?.syllabusId || '';
+  const [tasks, setTasks] = useState<ParsedTask[]>(state?.proposedSyllabus || mockTasks);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const hasErrors = tasks.some(t => t.status !== 'Ready' && t.status !== 'NEW');

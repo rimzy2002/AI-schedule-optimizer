@@ -8,6 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 export const ImportSyllabusPage: React.FC = () => {
   const [step, setStep] = useState<'input' | 'processing' | 'error'>('input');
   const [jobId, setJobId] = useState<string | null>(null);
+  const [syllabusId, setSyllabusId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -28,6 +29,7 @@ export const ImportSyllabusPage: React.FC = () => {
       
       const data = await response.json();
       setJobId(data.jobId);
+      setSyllabusId(data.syllabusId);
       
     } catch (err: any) {
       console.error(err);
@@ -51,7 +53,7 @@ export const ImportSyllabusPage: React.FC = () => {
           // For now, we mock the transition by logging and maybe showing an alert,
           // as the "Review Page" is not fully spec'd for Day 2 yet.
           console.log('Parsed tasks (Proposed State):', data.result);
-          navigate('/review', { state: { proposedSyllabus: data.result } });
+          navigate('/review', { state: { proposedSyllabus: data.result, syllabusId } });
         } else if (data.status === 'failed') {
           throw new Error('AI analysis failed. Please try a different text or format.');
         }

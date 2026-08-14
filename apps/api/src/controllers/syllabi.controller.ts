@@ -1,54 +1,73 @@
 import { Request, Response } from 'express';
+import { prisma } from '@ai-schedule-optimizer/database/src/client';
 import { syllabusQueue } from '../queues/syllabus.queue';
+import { extractSyllabusSchema } from '../schemas/syllabi.schema';
+import { asyncHandler } from '../utils/asyncHandler';
 
 export class SyllabiController {
-  async extractSyllabus(req: Request, res: Response) {
-    const { rawText } = req.body;
+  extractSyllabus = asyncHandler(async (req: Request, res: Response) => {
+    // @ts-ignore - mock user authentication for now
+    const userId = req.user?.id || 'user-1';
 
-    if (!rawText || typeof rawText !== 'string' || rawText.trim() === '') {
-      return res.status(400).json({ error: 'Valid rawText is required.' });
+    const result = extractSyllabusSchema.safeParse(req.body);
+    if (!result.success) {
+      res.status(400).json({ error: 'Invalid input', details: result.error.format() });
+      return;
     }
+
+    const { rawText } = result.data;
+
+    // Create a new Syllabus record in the database
+    const syllabus = await prisma.syllabus.create({
+      data: {
+        user_id: userId,
+        raw_text: rawText,
+      }
+    });
 
     const job = await syllabusQueue.add('process-syllabus', { rawText });
 
-    return res.status(202).json({
+    res.status(202).json({
       jobId: job.id,
+      syllabusId: syllabus.id,
       status: 'queued',
     });
-  }
+  });
 
-  async getJobStatus(req: Request, res: Response) {
+  getJobStatus = asyncHandler(async (req: Request, res: Response) => {
     const { jobId } = req.params;
 
     if (!jobId) {
-      return res.status(400).json({ error: 'Job ID is required.' });
+      res.status(400).json({ error: 'Job ID is required.' });
+      return;
     }
 
     const job = await syllabusQueue.getJob(jobId);
 
     if (!job) {
-      return res.status(404).json({ error: 'Job not found.' });
+      res.status(404).json({ error: 'Job not found.' });
+      return;
     }
 
     const state = await job.getState();
-    // BullMQ states: active, completed, failed, delayed, waiting, waiting-children, priorized, etc.
     let status = 'queued';
     if (state === 'active') status = 'processing';
     if (state === 'completed') status = 'completed';
     if (state === 'failed') status = 'failed';
 
     if (status === 'completed') {
-      return res.status(200).json({
+      res.status(200).json({
         status,
         result: job.returnvalue,
       });
+      return;
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       status,
       result: null,
     });
-  }
+  });
 }
 
 export const syllabiController = new SyllabiController();
