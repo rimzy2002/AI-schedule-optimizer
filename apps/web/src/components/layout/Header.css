@@ -1,46 +1,53 @@
 .header {
   height: 64px;
-  background-color: var(--bg-primary);
-  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-header);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 var(--space-6);
+}
+
+.header-search {
+  flex: 1;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 .icon-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: var(--radius-full);
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
 }
 
 .icon-btn:hover {
-  background-color: var(--bg-tertiary);
+  background-color: var(--bg-surface);
   color: var(--text-primary);
 }
 
 .user-profile {
-  width: 36px;
-  height: 36px;
-  background-color: var(--bg-tertiary);
-  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
   cursor: pointer;
-  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.user-profile:hover {
+  border-color: var(--border-strong);
 }

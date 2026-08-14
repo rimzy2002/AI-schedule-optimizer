@@ -13,10 +13,10 @@ export const SyllabusProcessing: React.FC = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-8 py-20">
       <div className="relative w-24 h-24 flex items-center justify-center">
-        <div className="absolute inset-0 border-4 border-bg-tertiary rounded-full"></div>
-        <div className="absolute inset-0 border-4 border-accent-primary rounded-full border-t-transparent animate-spin"></div>
-        <div className="w-12 h-12 bg-accent-primary/20 rounded-full flex items-center justify-center">
-          <span className="text-accent-primary font-bold text-xl">AI</span>
+        <div className="absolute inset-0 border-4 rounded-full" style={{ borderColor: 'var(--border-subtle)' }}></div>
+        <div className="absolute inset-0 border-4 rounded-full animate-spin" style={{ borderColor: 'var(--accent-blue)', borderTopColor: 'transparent' }}></div>
+        <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ backgroundColor: 'var(--accent-blue-subtle)' }}>
+          <span className="text-accent font-bold text-xl">AI</span>
         </div>
       </div>
       
@@ -25,19 +25,19 @@ export const SyllabusProcessing: React.FC = () => {
         <p className="text-secondary">This usually takes about 5-10 seconds.</p>
       </div>
 
-      <div className="max-w-md w-full p-6 bg-bg-secondary rounded-lg border border-border-color mt-8">
+      <div className="card max-w-md w-full mt-8">
         <h3 className="text-sm font-bold text-secondary uppercase tracking-wider mb-4">What's happening?</h3>
-        <ul className="space-y-3 text-sm text-text-secondary">
-          <li className="flex items-start gap-3">
-            <span className="text-accent-primary">✓</span>
+        <ul className="flex flex-col gap-3 text-sm text-secondary">
+          <li className="flex items-center gap-3">
+            <span className="text-accent">✓</span>
             Reading unstructured text
           </li>
-          <li className="flex items-start gap-3">
-            <span className="text-accent-primary">✓</span>
+          <li className="flex items-center gap-3">
+            <span className="text-accent">✓</span>
             Identifying courses and modules
           </li>
-          <li className="flex items-start gap-3">
-            <span className="text-accent-primary animate-pulse">●</span>
+          <li className="flex items-center gap-3">
+            <span className="text-accent animate-pulse">●</span>
             Extracting tasks, weights, and deadlines
           </li>
         </ul>

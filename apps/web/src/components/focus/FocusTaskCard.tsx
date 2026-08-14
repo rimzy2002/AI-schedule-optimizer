@@ -8,14 +8,14 @@ interface FocusTaskCardProps {
 
 export const FocusTaskCard: React.FC<FocusTaskCardProps> = ({ title, dueText }) => {
   return (
-    <Card className="text-center bg-gray-50 border border-gray-200 shadow-sm p-4 mb-6">
-      <span className="text-xs font-bold tracking-wider text-gray-500 uppercase block mb-1">
+    <div className="text-center w-full">
+      <span className="text-xs font-bold tracking-wider text-muted uppercase block mb-2">
         CURRENTLY FOCUSING ON
       </span>
-      <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+      <h2 className="text-h2 text-primary">{title}</h2>
       {dueText && (
-        <p className="text-sm text-gray-500 mt-1">{dueText}</p>
+        <p className="text-sm text-secondary mt-1">{dueText}</p>
       )}
-    </Card>
+    </div>
   );
 };

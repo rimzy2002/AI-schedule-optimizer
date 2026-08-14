@@ -51,11 +51,18 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center my-12">
-      <div className={`text-8xl font-black tracking-tighter tabular-nums ${status === 'PAUSED' ? 'text-gray-400' : 'text-blue-600'}`}>
+      <div 
+        className="font-black tabular-nums" 
+        style={{ 
+          fontSize: '5rem', 
+          lineHeight: '1', 
+          color: status === 'PAUSED' ? 'var(--text-muted)' : 'var(--text-primary)' 
+        }}
+      >
         {mins.toString().padStart(2, '0')}:{secs.toString().padStart(2, '0')}
       </div>
       {status === 'PAUSED' && (
-        <p className="text-xl text-orange-500 font-bold mt-4 uppercase tracking-widest">Paused</p>
+        <p className="text-warning font-bold mt-4 uppercase tracking-widest">Paused</p>
       )}
     </div>
   );

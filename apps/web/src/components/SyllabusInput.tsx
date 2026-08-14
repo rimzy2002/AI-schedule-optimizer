@@ -31,7 +31,7 @@ export const SyllabusInput: React.FC<SyllabusInputProps> = ({ onAnalyze, isLoadi
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Paste syllabus text here..."
-          className="flex-1 w-full p-4 bg-bg-secondary border border-border-color rounded-lg resize-none text-text-primary focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary transition-all font-sans"
+          className="input-field flex-1 resize-none font-sans"
           disabled={isLoading}
         />
       </div>
@@ -45,7 +45,7 @@ export const SyllabusInput: React.FC<SyllabusInputProps> = ({ onAnalyze, isLoadi
         <button
           onClick={() => onAnalyze(text)}
           disabled={!text.trim() || isLoading}
-          className="px-6 py-3 bg-accent-primary hover:bg-accent-hover text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-glow"
+          className="btn btn-primary btn-lg"
         >
           Analyze syllabus
         </button>

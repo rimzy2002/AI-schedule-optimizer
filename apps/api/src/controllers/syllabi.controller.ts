@@ -7,7 +7,21 @@ import { asyncHandler } from '../utils/asyncHandler';
 export class SyllabiController {
   extractSyllabus = asyncHandler(async (req: Request, res: Response) => {
     // @ts-ignore - mock user authentication for now
-    const userId = req.user?.id || 'user-1';
+    let userId = req.user?.id;
+    
+    if (!userId) {
+      // Create a default mock user if none exists
+      let mockUser = await prisma.user.findFirst();
+      if (!mockUser) {
+        mockUser = await prisma.user.create({
+          data: {
+            email: 'mock@example.com',
+            password_hash: 'mock_hash',
+          }
+        });
+      }
+      userId = mockUser.id;
+    }
 
     const result = extractSyllabusSchema.safeParse(req.body);
     if (!result.success) {
@@ -21,7 +35,7 @@ export class SyllabiController {
     const syllabus = await prisma.syllabus.create({
       data: {
         user_id: userId,
-        raw_text: rawText,
+        course_name: 'Imported Syllabus',
       }
     });
 

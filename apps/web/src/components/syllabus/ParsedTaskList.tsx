@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ParsedTask } from '../../types';
 import { ParsedTaskCard } from './ParsedTaskCard';
 import { TaskReviewForm } from './TaskReviewForm';
+import { Button } from '../ui/Button';
 
 interface ParsedTaskListProps {
   tasks: ParsedTask[];
@@ -28,7 +29,7 @@ export const ParsedTaskList: React.FC<ParsedTaskListProps> = ({ tasks, onTasksCh
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {tasks.map((task) => (
         <div key={task.id}>
           {editingId === task.id ? (
@@ -53,12 +54,14 @@ export const ParsedTaskList: React.FC<ParsedTaskListProps> = ({ tasks, onTasksCh
           onCancel={() => setIsAdding(false)}
         />
       ) : (
-        <button
+        <Button 
+          variant="outline" 
+          fullWidth 
           onClick={() => setIsAdding(true)}
-          className="w-full py-3 border-2 border-dashed border-gray-300 text-gray-500 rounded-lg hover:border-gray-400 hover:text-gray-700 transition-colors"
+          style={{ height: '56px', borderStyle: 'dashed', color: 'var(--text-muted)' }}
         >
-          + Add Missing Task
-        </button>
+          + Add missing task
+        </Button>
       )}
     </div>
   );

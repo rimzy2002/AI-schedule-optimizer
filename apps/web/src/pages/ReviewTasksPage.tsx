@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ParsedTask } from '../types';
 import { ParsedTaskList } from '../components/syllabus/ParsedTaskList';
+import { Button } from '../components/ui/Button';
+import './ReviewTasksPage.css';
 
 // Mock initial data if none provided via router state
 const mockTasks: ParsedTask[] = [
@@ -13,9 +15,10 @@ const mockTasks: ParsedTask[] = [
 export const ReviewTasksPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as { syllabusId?: string, proposedSyllabus?: ParsedTask[] } | null;
+  const state = location.state as { syllabusId?: string, proposedSyllabus?: ParsedTask[], courseName?: string } | null;
   
   const syllabusId = state?.syllabusId || '';
+  const courseName = state?.courseName || '';
   const [tasks, setTasks] = useState<ParsedTask[]>(state?.proposedSyllabus || mockTasks);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,7 +29,7 @@ export const ReviewTasksPage: React.FC = () => {
     
     setIsSubmitting(true);
     try {
-      const res = await fetch('http://localhost:4000/api/tasks/confirm', {
+      const res = await fetch('/api/tasks/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -54,32 +57,48 @@ export const ReviewTasksPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Review Extracted Tasks</h1>
-        <p className="text-gray-600">
-          The AI has proposed the following tasks. Please verify and edit them because the AI output is a proposal, not ground truth.
+    <div className="review-page">
+      <div className="page-header">
+        <h1 className="page-title">Review Extracted Tasks</h1>
+        {courseName && <h2 className="text-xl font-semibold mb-2">{courseName}</h2>}
+        <p className="page-subtitle">
+          AI detected these assignments from your syllabus. Review and correct anything before generating your schedule.
         </p>
       </div>
 
-      <ParsedTaskList tasks={tasks} onTasksChange={setTasks} />
+      <div className="review-content">
+        {/* We could add the Summary Box here if needed: "6 tasks extracted • 1 date needs review" */}
+        <div className="review-summary-box mb-6">
+          <div className="flex items-center gap-2">
+            <span className="text-success">✓</span>
+            <span className="text-body font-medium">{tasks.length} tasks extracted</span>
+            {hasErrors && (
+              <>
+                <span className="text-muted">•</span>
+                <span className="text-warning font-medium">Needs review</span>
+              </>
+            )}
+          </div>
+        </div>
 
-      <div className="mt-8 flex justify-end">
-        <button
-          onClick={handleConfirm}
-          disabled={hasErrors || isSubmitting || tasks.length === 0}
-          className={`px-6 py-3 rounded-md text-white font-medium ${
-            hasErrors || tasks.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          {isSubmitting ? 'Confirming...' : 'Confirm Tasks & Generate Schedule'}
-        </button>
+        <ParsedTaskList tasks={tasks} onTasksChange={setTasks} />
+
+        <div className="flex flex-col items-end gap-2 mt-8">
+          <Button
+            variant="primary"
+            size="lg"
+            onClick={handleConfirm}
+            disabled={hasErrors || isSubmitting || tasks.length === 0}
+          >
+            {isSubmitting ? 'Confirming...' : 'Confirm Tasks & Generate Schedule'}
+          </Button>
+          {hasErrors && (
+            <p className="text-sm text-warning mt-2 flex items-center gap-2">
+              <span>⚠</span> Fix tasks marked "Needs attention" or "Check date" before generating your schedule.
+            </p>
+          )}
+        </div>
       </div>
-      {hasErrors && (
-        <p className="text-red-500 text-sm text-right mt-2">
-          Please resolve all errors before confirming.
-        </p>
-      )}
     </div>
   );
 };

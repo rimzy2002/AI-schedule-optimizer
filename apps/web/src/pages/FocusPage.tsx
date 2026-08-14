@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { FocusTimer } from '../components/focus/FocusTimer';
 import { TimerControls } from '../components/focus/TimerControls';
 import { FocusTaskCard } from '../components/focus/FocusTaskCard';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 export const FocusPage: React.FC = () => {
   const location = useLocation();
@@ -19,7 +21,7 @@ export const FocusPage: React.FC = () => {
 
   const handleStart = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/focus/start', {
+      const res = await fetch('/api/focus/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -39,7 +41,7 @@ export const FocusPage: React.FC = () => {
   const handlePause = async () => {
     if (!session) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/focus/${session.id}/pause`, { method: 'PATCH' });
+      const res = await fetch(`/api/focus/${session.id}/pause`, { method: 'PATCH' });
       const data = await res.json();
       setSession(data);
       setStatus('PAUSED');
@@ -51,7 +53,7 @@ export const FocusPage: React.FC = () => {
   const handleResume = async () => {
     if (!session) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/focus/${session.id}/resume`, { method: 'PATCH' });
+      const res = await fetch(`/api/focus/${session.id}/resume`, { method: 'PATCH' });
       const data = await res.json();
       setSession(data);
       setStatus('ACTIVE');
@@ -63,7 +65,7 @@ export const FocusPage: React.FC = () => {
   const handleComplete = async () => {
     if (!session) return;
     try {
-      await fetch(`http://localhost:4000/api/focus/${session.id}/complete`, { method: 'PATCH' });
+      await fetch(`/api/focus/${session.id}/complete`, { method: 'PATCH' });
       setStatus('COMPLETED');
       // Navigate back to dashboard after a short delay
       setTimeout(() => {
@@ -76,25 +78,38 @@ export const FocusPage: React.FC = () => {
 
   if (!studyBlock && status === 'IDLE') {
     return (
-      <div className="max-w-2xl mx-auto p-8 text-center">
-        <h2 className="text-xl font-bold text-red-600">No study block selected</h2>
-        <button className="mt-4 text-blue-500 underline" onClick={() => navigate('/')}>Return to Dashboard</button>
+      <div className="flex flex-col items-center justify-center h-full max-w-md mx-auto text-center gap-6">
+        <div className="w-16 h-16 rounded-full bg-surface border border-subtle flex items-center justify-center text-accent">
+          {/* Using a simple inline SVG for the focus icon as a placeholder */}
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-h2">No study block selected</h2>
+          <p className="text-secondary text-body">
+            Select a study session from your schedule to begin a focused work session.
+          </p>
+        </div>
+        <Button variant="primary" onClick={() => navigate('/schedule')}>
+          View Schedule
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4">
+    <div className="max-w-2xl mx-auto py-12">
       {status === 'COMPLETED' ? (
-        <div className="text-center p-12 bg-green-50 border border-green-200 rounded-2xl">
-          <h2 className="text-3xl font-bold text-green-700 mb-4">Session Complete!</h2>
-          <p className="text-green-600">Great job. Returning to dashboard...</p>
-        </div>
+        <Card className="text-center p-12 bg-success-subtle border-success">
+          <h2 className="text-h1 text-success mb-4">Session Complete!</h2>
+          <p className="text-body text-secondary">Great job. Returning to dashboard...</p>
+        </Card>
       ) : (
-        <div className="bg-white rounded-3xl shadow-xl p-10 border border-gray-100">
-          <FocusTaskCard 
-            title={studyBlock?.title || 'Ad-hoc Study Session'} 
-          />
+        <Card className="flex flex-col items-center p-10">
+          <div className="w-full mb-10">
+            <FocusTaskCard 
+              title={studyBlock?.title || 'Ad-hoc Study Session'} 
+            />
+          </div>
           
           <FocusTimer
             plannedMinutes={blockDurationMins}
@@ -104,14 +119,16 @@ export const FocusPage: React.FC = () => {
             accumulatedPause={session?.accumulated_pause || 0}
           />
 
-          <TimerControls 
-            status={status}
-            onStart={handleStart}
-            onPause={handlePause}
-            onResume={handleResume}
-            onComplete={handleComplete}
-          />
-        </div>
+          <div className="mt-10">
+            <TimerControls 
+              status={status}
+              onStart={handleStart}
+              onPause={handlePause}
+              onResume={handleResume}
+              onComplete={handleComplete}
+            />
+          </div>
+        </Card>
       )}
     </div>
   );

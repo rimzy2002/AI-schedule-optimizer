@@ -2,14 +2,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--space-2);
   border-radius: var(--radius-md);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   border: 1px solid transparent;
   outline: none;
-  font-family: var(--font-sans);
 }
 
 .btn:active {
@@ -17,44 +16,62 @@
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  background-color: var(--btn-disabled-bg);
+  color: var(--btn-disabled-text);
   cursor: not-allowed;
+  opacity: 0.9;
+  border-color: transparent;
 }
 
 /* Variants */
 .btn-primary {
-  background-color: var(--accent-primary);
+  background-color: var(--accent-blue);
   color: #fff;
   box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--accent-hover);
-  box-shadow: var(--shadow-glow);
+  background-color: var(--accent-blue-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background-color: var(--accent-blue-active);
 }
 
 .btn-secondary {
-  background-color: var(--bg-tertiary);
+  background-color: transparent;
+  border-color: var(--border-subtle);
   color: var(--text-primary);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #333;
+  background-color: var(--bg-surface);
+  border-color: var(--border-strong);
+}
+
+.btn-danger {
+  background-color: transparent;
+  border-color: var(--status-error-border);
+  color: var(--status-error-text);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--status-error-bg);
 }
 
 .btn-outline {
   background-color: transparent;
-  border-color: var(--border-color);
+  border-color: var(--border-strong);
   color: var(--text-primary);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background-color: var(--bg-tertiary);
+  background-color: var(--bg-surface);
 }
 
 /* Sizes */
-.btn-sm { padding: 0.25rem 0.75rem; font-size: 0.875rem; }
-.btn-md { padding: 0.5rem 1rem; font-size: 1rem; }
-.btn-lg { padding: 0.75rem 1.5rem; font-size: 1.125rem; }
+.btn-sm { padding: 0 var(--space-3); height: 32px; font-size: 14px; }
+.btn-md { padding: 0 var(--space-4); height: 42px; font-size: 14px; }
+.btn-lg { padding: 0 var(--space-6); height: 48px; font-size: 16px; }
 
 .btn-full { width: 100%; }

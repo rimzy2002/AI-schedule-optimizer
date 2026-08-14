@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ScheduleSummary } from '../components/schedule/ScheduleSummary';
 import { ScheduleCalendar } from '../components/schedule/ScheduleCalendar';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 interface ScheduleData {
   scheduled: { taskId: string; taskTitle: string; start: string; end: string; }[];
@@ -26,10 +28,10 @@ export const SchedulePage: React.FC = () => {
     // If no syllabusId, maybe fetch a default or show error.
     const fetchPreview = async () => {
       try {
-        const res = await fetch('http://localhost:4000/api/schedule/preview', {
+        const res = await fetch('/api/schedule/preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ syllabusId: syllabusId || 'mock-syllabus-id' })
+          body: JSON.stringify({ syllabusId: syllabusId || '00000000-0000-0000-0000-000000000000' })
         });
         if (res.ok) {
           const data = await res.json();
@@ -50,7 +52,7 @@ export const SchedulePage: React.FC = () => {
     if (!scheduleData) return;
     setIsAccepting(true);
     try {
-      const res = await fetch('http://localhost:4000/api/schedule/accept', {
+      const res = await fetch('/api/schedule/accept', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blocks: scheduleData.scheduled })
@@ -69,24 +71,36 @@ export const SchedulePage: React.FC = () => {
   };
 
   if (isLoading) {
-    return <div className="p-8 text-center text-gray-500">Generating your optimal schedule...</div>;
+    return <div className="p-8 text-center text-muted">Generating your optimal schedule...</div>;
   }
 
   if (!scheduleData) {
-    return <div className="p-8 text-center text-red-500">Failed to generate schedule.</div>;
+    return (
+      <div className="max-w-2xl mx-auto py-12">
+        <Card className="flex flex-col items-center justify-center p-12 text-center border-error bg-error-subtle">
+          <div className="text-error text-3xl mb-4">⚠</div>
+          <h2 className="text-h2 text-error mb-2">Unable to generate your schedule</h2>
+          <p className="text-body text-secondary mb-6">Review your coursework and try again.</p>
+          <div className="flex gap-4">
+            <Button variant="outline" onClick={() => navigate('/review')}>Review Tasks</Button>
+            <Button variant="primary" onClick={() => navigate('/import')}>Try Again</Button>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-8 px-4">
+    <div className="py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Schedule Preview</h1>
-        <button
+        <h1 className="page-title mb-0">Schedule</h1>
+        <Button
+          variant="primary"
           onClick={handleAccept}
           disabled={isAccepting}
-          className="px-6 py-2 bg-green-600 text-white rounded-md font-medium hover:bg-green-700 disabled:bg-gray-400"
         >
           {isAccepting ? 'Accepting...' : 'Accept Schedule'}
-        </button>
+        </Button>
       </div>
 
       <ScheduleSummary
@@ -98,13 +112,13 @@ export const SchedulePage: React.FC = () => {
       <ScheduleCalendar blocks={scheduleData.scheduled} />
       
       {scheduleData.unallocated?.length > 0 && (
-        <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <h3 className="text-yellow-800 font-bold mb-2">Warning: Could not allocate all study time</h3>
-          <p className="text-yellow-700 text-sm">
+        <Card className="mt-8 border-warning bg-warning-subtle">
+          <h3 className="text-h3 text-warning mb-2">Warning: Could not allocate all study time</h3>
+          <p className="text-sm text-secondary">
             Some tasks require more study time than you have available before their deadline. 
             Consider adjusting your task weights or clearing your calendar.
           </p>
-        </div>
+        </Card>
       )}
     </div>
   );

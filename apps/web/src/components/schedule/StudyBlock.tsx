@@ -12,9 +12,9 @@ export const StudyBlock: React.FC<StudyBlockProps> = ({ title, start, end }) => 
   };
 
   return (
-    <div className="bg-indigo-100 border border-indigo-200 p-3 rounded-md shadow-sm mb-2">
-      <p className="font-semibold text-indigo-900">{title}</p>
-      <p className="text-sm text-indigo-700 mt-1">
+    <div className="bg-surface border border-strong p-3 rounded-md shadow-sm">
+      <p className="font-semibold text-primary">{title}</p>
+      <p className="text-xs text-secondary mt-1">
         {formatTime(start)} - {formatTime(end)}
       </p>
     </div>

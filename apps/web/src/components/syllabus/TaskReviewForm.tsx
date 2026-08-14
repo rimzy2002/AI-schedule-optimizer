@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
 import { ParsedTask } from '../../types';
+import { Card } from '../ui/Card';
+import { Input } from '../ui/Input';
+import { Select } from '../ui/Select';
+import { Button } from '../ui/Button';
 
 interface TaskReviewFormProps {
   task?: ParsedTask;
@@ -16,95 +20,78 @@ export const TaskReviewForm: React.FC<TaskReviewFormProps> = ({ task, onSave, on
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const parsedWeight = parseFloat(weight) || 0;
+    let status: ParsedTask['status'] = 'Ready';
+    if (!deadline) status = 'CHECK DATE';
+    else if (parsedWeight === 0) status = 'MISSING WEIGHT';
+
     onSave({
       id: task?.id || crypto.randomUUID(),
       name,
       type,
-      weight: parseFloat(weight) || 0,
+      weight: parsedWeight,
       deadline: deadline ? new Date(deadline).toISOString() : null,
-      status: 'Ready', // reset status on edit
+      status,
     });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border rounded-lg bg-gray-50 shadow-sm mt-2 mb-2">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Task Name</label>
-          <input
-            type="text"
+    <Card className="mb-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <Input
+          label="Task Name"
+          type="text"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <div className="flex gap-4">
+          <Input
+            label="Weight (%)"
+            type="number"
+            min="0"
+            max="100"
+            step="0.1"
             required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+            value={weight}
+            onChange={(e) => setWeight(e.target.value)}
+          />
+          <Input
+            label="Deadline"
+            type="date"
+            value={deadline}
+            onChange={(e) => setDeadline(e.target.value)}
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Weight (%)</label>
-            <input
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              required
-              value={weight}
-              onChange={(e) => setWeight(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Deadline</label>
-            <input
-              type="date"
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Type</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as ParsedTask['type'])}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="assignment">Assignment</option>
-            <option value="exam">Exam</option>
-            <option value="quiz">Quiz</option>
-            <option value="project">Project</option>
-            <option value="reading">Reading</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div className="flex justify-between pt-2">
+        <Select
+          label="Type"
+          value={type}
+          onChange={(e) => setType(e.target.value as ParsedTask['type'])}
+          options={[
+            { value: 'assignment', label: 'Assignment' },
+            { value: 'exam', label: 'Exam' },
+            { value: 'quiz', label: 'Quiz' },
+            { value: 'project', label: 'Project' },
+            { value: 'reading', label: 'Reading' },
+            { value: 'other', label: 'Other' }
+          ]}
+        />
+        <div className="flex justify-between mt-4">
           {onDelete ? (
-            <button
-              type="button"
-              onClick={onDelete}
-              className="px-4 py-2 text-sm text-red-600 hover:text-red-800"
-            >
+            <Button type="button" variant="danger" onClick={onDelete}>
               Delete extraction
-            </button>
+            </Button>
           ) : <div></div>}
-          <div className="space-x-2">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
-            >
+          <div className="flex gap-2">
+            <Button type="button" variant="secondary" onClick={onCancel}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
+            </Button>
+            <Button type="submit" variant="primary">
               Save
-            </button>
+            </Button>
           </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </Card>
   );
 };

@@ -1,0 +1,11 @@
+.review-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.review-summary-box {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-6);
+}

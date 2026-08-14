@@ -1,5 +1,8 @@
 import React from 'react';
 import { ParsedTask } from '../../types';
+import { Card } from '../ui/Card';
+import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
 
 interface ParsedTaskCardProps {
   task: ParsedTask;
@@ -12,33 +15,34 @@ export const ParsedTaskCard: React.FC<ParsedTaskCardProps> = ({ task, onEdit }) 
   const formatDate = (isoStr: string | null) => {
     if (!isoStr) return 'N/A';
     const d = new Date(isoStr);
-    return d.toLocaleDateString(undefined, { month: 'short', day: '2-digit' });
+    return d.toLocaleDateString(undefined, { month: 'short', day: '2-digit', timeZone: 'UTC' });
+  };
+
+  const getBadgeVariant = (status: string) => {
+    if (status === 'Ready') return 'success';
+    if (status === 'NEW') return 'success';
+    if (status === 'CHECK DATE' || status === 'Needs attention') return 'warning';
+    return 'error';
   };
 
   return (
-    <div className={`p-4 border rounded-lg shadow-sm flex items-center justify-between mb-2 ${isError ? 'border-red-300 bg-red-50' : 'bg-white'}`}>
+    <Card className={`mb-2 flex items-center justify-between ${isError ? 'card-highlight' : ''}`}>
       <div className="flex-1">
-        <h4 className="font-semibold text-gray-900">{task.name}</h4>
-        <div className="text-sm text-gray-500 mt-1 flex space-x-4">
+        <h4 className="text-body font-semibold text-primary">{task.name}</h4>
+        <div className="text-sm text-secondary mt-2 flex gap-6">
           <span>{task.weight}%</span>
           <span>{formatDate(task.deadline)}</span>
+          <span className="text-muted capitalize">{task.type}</span>
         </div>
       </div>
-      <div className="flex items-center space-x-4">
-        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-          isError ? 'bg-red-100 text-red-800' : 
-          task.status === 'NEW' ? 'bg-green-100 text-green-800' :
-          'bg-blue-100 text-blue-800'
-        }`}>
+      <div className="flex items-center gap-4">
+        <Badge variant={getBadgeVariant(task.status)}>
           {task.status}
-        </span>
-        <button 
-          onClick={onEdit}
-          className="text-sm text-blue-600 hover:text-blue-800"
-        >
+        </Badge>
+        <Button variant="outline" size="sm" onClick={onEdit}>
           Edit
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 };

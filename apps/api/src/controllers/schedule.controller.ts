@@ -17,8 +17,12 @@ const acceptScheduleSchema = z.object({
 });
 
 export const generatePreview = asyncHandler(async (req: Request, res: Response) => {
-  // @ts-ignore - mock user authentication for now
-  const userId = req.user?.id || 'mock-user-id'; // assuming user is authenticated
+  let userId = req.user?.id as string;
+  if (!userId) {
+    const mockUser = await prisma.user.findFirst();
+    if (mockUser) userId = mockUser.id;
+    else return res.status(401).json({ error: 'Unauthorized' });
+  }
   
   const result = generatePreviewSchema.safeParse(req.body);
   if (!result.success) {
@@ -31,8 +35,12 @@ export const generatePreview = asyncHandler(async (req: Request, res: Response) 
 });
 
 export const acceptSchedule = asyncHandler(async (req: Request, res: Response) => {
-  // @ts-ignore - mock user authentication for now
-  const userId = req.user?.id || 'mock-user-id';
+  let userId = req.user?.id as string;
+  if (!userId) {
+    const mockUser = await prisma.user.findFirst();
+    if (mockUser) userId = mockUser.id;
+    else return res.status(401).json({ error: 'Unauthorized' });
+  }
   
   const result = acceptScheduleSchema.safeParse(req.body);
   if (!result.success) {

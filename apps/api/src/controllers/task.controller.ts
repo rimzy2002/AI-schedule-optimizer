@@ -4,8 +4,12 @@ import { confirmTasksSchema } from '../schemas/task.schema';
 import { asyncHandler } from '../utils/asyncHandler';
 
 export const confirmTasks = asyncHandler(async (req: Request, res: Response) => {
-  // @ts-ignore
-  const userId = req.user?.id || 'user-1';
+  let userId = req.user?.id as string;
+  if (!userId) {
+    const mockUser = await prisma.user.findFirst();
+    if (mockUser) userId = mockUser.id;
+    else return res.status(401).json({ error: 'Unauthorized: No user found' });
+  }
 
   const result = confirmTasksSchema.safeParse(req.body);
   if (!result.success) {
