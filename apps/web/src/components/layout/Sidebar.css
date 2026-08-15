@@ -1,7 +1,7 @@
 .sidebar {
   width: 240px;
   background-color: var(--bg-sidebar);
-  border-right: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-strong);
   display: flex;
   flex-direction: column;
   padding: var(--space-4) 0;
@@ -19,7 +19,7 @@
 }
 
 .brand-icon {
-  color: var(--accent-blue);
+  color: var(--primary);
 }
 
 .sidebar-nav {
@@ -36,9 +36,14 @@
   height: 42px;
   padding: 0 var(--space-3);
   border-radius: var(--radius-md);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-size: 14px;
   font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav-item svg {
+  color: var(--text-secondary);
   transition: all 0.2s ease;
 }
 
@@ -47,7 +52,15 @@
   color: var(--text-sidebar-hover);
 }
 
+.nav-item:hover svg {
+  color: var(--text-sidebar-hover);
+}
+
 .nav-item.active {
   background-color: var(--bg-sidebar-active);
+  color: var(--text-sidebar-active);
+}
+
+.nav-item.active svg {
   color: var(--text-sidebar-active);
 }

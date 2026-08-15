@@ -1,21 +1,23 @@
 .card {
-  background-color: var(--bg-elevated);
-  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .card:hover {
-  border-color: var(--border-strong);
+  background-color: var(--bg-elevated);
+  border-color: #CBD5E1; /* Card hover border from spec */
 }
 
 .card-glass {
-  background: rgba(30, 41, 59, 0.7);
+  background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
 
 .card-highlight {
-  border-color: var(--border-focus);
+  border-color: var(--primary);
 }

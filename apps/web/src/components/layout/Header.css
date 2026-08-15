@@ -1,7 +1,7 @@
 .header {
   height: 64px;
   background-color: var(--bg-header);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -31,7 +31,7 @@
 
 .icon-btn:hover {
   background-color: var(--bg-surface);
-  color: var(--text-primary);
+  color: #1E293B;
 }
 
 .user-profile {
@@ -41,8 +41,8 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
   color: var(--text-primary);
   cursor: pointer;
   transition: all 0.2s ease;

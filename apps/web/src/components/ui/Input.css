@@ -26,7 +26,7 @@
 
 .input-field:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 2px var(--accent-blue-subtle);
+  box-shadow: 0 0 0 2px var(--primary-input-ring);
 }
 
 .input-field::placeholder {

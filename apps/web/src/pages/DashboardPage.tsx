@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NextActionCard } from '../components/dashboard/NextActionCard';
+import { SyllabusImportCard } from '../components/dashboard/SyllabusImportCard';
 import { TodayTimeline } from '../components/dashboard/TodayTimeline';
 import { DeadlineSummary } from '../components/dashboard/DeadlineSummary';
 import './DashboardPage.css';
@@ -19,52 +20,52 @@ export const DashboardPage: React.FC = () => {
       })
       .catch(e => {
         console.error(e);
+        // On error, we still want to show the dashboard empty states rather than crashing
+        setData({ nextAction: null, todayBlocks: [], upcomingDeadlines: [] });
         setLoading(false);
       });
   }, []);
 
   if (loading) {
-    return <div className="p-8 text-center text-gray-500">Loading your day...</div>;
+    return (
+      <div className="flex h-full items-center justify-center text-secondary">
+        Loading your day...
+      </div>
+    );
   }
 
+  // Greeting based on time
+  const hour = new Date().getHours();
+  let greeting = 'Good evening';
+  if (hour >= 5 && hour < 12) greeting = 'Good morning';
+  else if (hour >= 12 && hour < 17) greeting = 'Good afternoon';
+
   return (
-    <div className="dashboard">
-      <header className="page-header mb-8">
-        <h1 className="page-title mb-1">Good morning 👋</h1>
-        <p className="page-subtitle">What should you work on next?</p>
+    <div className="dashboard-container">
+      <header className="mb-8">
+        <h1 className="text-h3 font-medium text-secondary mb-1">{greeting} 👋</h1>
+        <h2 className="text-4xl font-bold text-primary">What should you work on next?</h2>
       </header>
 
-      <div className="dashboard-grid">
-        <div className="dashboard-main space-y-8">
-          {data?.nextAction ? (
-            <NextActionCard 
-              action={data.nextAction} 
-              onStart={() => navigate(`/focus`, { state: { studyBlock: data.nextAction } })}
-            />
-          ) : (
-            <div className="bg-surface border border-subtle rounded-lg p-8 text-center">
-              <h3 className="text-h3 text-primary">All done for now!</h3>
-              <p className="text-secondary mt-2">Take a break, you've completed your tasks.</p>
-            </div>
-          )}
-
-          <section>
-            <h3 className="text-h3 text-primary mb-4">Today Timeline</h3>
-            <TodayTimeline blocks={data?.todayBlocks || []} />
-          </section>
-        </div>
-
-        <div className="dashboard-sidebar space-y-8">
-          <section>
-            <h3 className="text-h3 text-primary mb-4">Upcoming Deadlines</h3>
-            <DeadlineSummary deadlines={data?.upcomingDeadlines || []} />
-          </section>
-          
-          <div className="text-sm text-secondary bg-surface p-4 rounded-lg border border-subtle">
-            <p>Missed sessions will be available for rescheduling.</p>
-          </div>
-        </div>
+      <div className="dashboard-top-grid mb-12">
+        <NextActionCard 
+          action={data?.nextAction} 
+          onStart={() => {
+            if (data?.nextAction) {
+              navigate(`/focus`, { state: { studyBlock: data.nextAction } });
+            }
+          }}
+        />
+        <SyllabusImportCard />
       </div>
+
+      <section>
+        <h2 className="text-2xl font-bold text-primary mb-6">Today</h2>
+        <div className="dashboard-bottom-grid">
+          <TodayTimeline blocks={data?.todayBlocks || []} />
+          <DeadlineSummary deadlines={data?.upcomingDeadlines || []} />
+        </div>
+      </section>
     </div>
   );
 };

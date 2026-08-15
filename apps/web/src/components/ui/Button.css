@@ -15,48 +15,53 @@
   transform: scale(0.98);
 }
 
+.btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--primary-focus-ring);
+}
+
 .btn:disabled {
   background-color: var(--btn-disabled-bg);
   color: var(--btn-disabled-text);
+  border-color: var(--btn-disabled-bg); /* Use matching border color as spec: #E2E8F0 */
   cursor: not-allowed;
-  opacity: 0.9;
-  border-color: transparent;
+  opacity: 1;
 }
 
 /* Variants */
 .btn-primary {
-  background-color: var(--accent-blue);
-  color: #fff;
+  background-color: var(--primary);
+  color: #FFFFFF;
   box-shadow: var(--shadow-sm);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: var(--accent-blue-hover);
+  background-color: var(--primary-hover);
 }
 
 .btn-primary:active:not(:disabled) {
-  background-color: var(--accent-blue-active);
+  background-color: var(--primary-active);
 }
 
 .btn-secondary {
-  background-color: transparent;
-  border-color: var(--border-subtle);
-  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  border-color: #CBD5E1;
+  color: var(--text-body);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: var(--bg-surface);
-  border-color: var(--border-strong);
+  background-color: var(--bg-elevated);
+  border-color: var(--text-muted); /* #94A3B8 */
 }
 
 .btn-danger {
-  background-color: transparent;
-  border-color: var(--status-error-border);
-  color: var(--status-error-text);
+  background-color: var(--status-error-border);
+  border-color: transparent;
+  color: #FFFFFF;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: var(--status-error-bg);
+  background-color: var(--status-error-icon);
 }
 
 .btn-outline {

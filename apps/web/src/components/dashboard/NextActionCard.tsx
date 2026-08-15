@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { useNavigate } from 'react-router-dom';
 
 interface NextActionCardProps {
   action: {
@@ -11,11 +12,32 @@ interface NextActionCardProps {
     task?: {
       deadline?: string;
     };
-  };
+  } | null;
   onStart: () => void;
 }
 
 export const NextActionCard: React.FC<NextActionCardProps> = ({ action, onStart }) => {
+  const navigate = useNavigate();
+
+  if (!action) {
+    return (
+      <Card className="bg-surface border-subtle border p-6 h-full flex flex-col justify-between items-start">
+        <div className="mb-6">
+          <span className="text-xs font-bold tracking-wider text-muted uppercase mb-2 block">
+            NEXT ACTION
+          </span>
+          <h2 className="text-h2 font-bold text-primary mb-2">You're all caught up! 🎉</h2>
+          <p className="text-secondary text-sm">
+            No urgent tasks right now. Add a course or schedule a study session to get started.
+          </p>
+        </div>
+        <Button className="w-full sm:w-auto font-bold py-2 px-6 bg-border-subtle hover:bg-border-strong text-primary rounded-md" onClick={() => navigate('/import')}>
+          Add course
+        </Button>
+      </Card>
+    );
+  }
+
   const start = new Date(action.start_time);
   const end = new Date(action.end_time);
   const durationMins = Math.round((end.getTime() - start.getTime()) / 60000);
@@ -31,24 +53,21 @@ export const NextActionCard: React.FC<NextActionCardProps> = ({ action, onStart 
   }
 
   return (
-    <Card className="bg-surface border-accent border-2 shadow-lg p-6">
-      <span className="text-xs font-bold tracking-wider text-accent uppercase mb-2 block">
-        NEXT ACTION
-      </span>
-      <h2 className="text-h2 text-primary mb-2">{action.title}</h2>
-      
-      <div className="flex gap-4 mb-6">
-        {dueText && (
-          <div className="flex items-center text-sm font-medium text-warning bg-warning-subtle px-2 py-1 rounded">
-            {dueText}
-          </div>
-        )}
-        <div className="flex items-center text-sm font-medium text-secondary bg-surface-hover px-2 py-1 rounded">
-          {durationMins} min planned
+    <Card className="bg-surface border-subtle border p-6 h-full flex flex-col justify-between items-start">
+      <div className="mb-6">
+        <span className="text-xs font-bold tracking-wider text-muted uppercase mb-2 block">
+          NEXT ACTION
+        </span>
+        <h2 className="text-h2 font-bold text-primary mb-2">{action.title}</h2>
+        
+        <div className="flex flex-wrap gap-2 text-sm text-secondary">
+          {dueText && <span>{dueText}</span>}
+          {dueText && <span>•</span>}
+          <span>{durationMins} min planned</span>
         </div>
       </div>
       
-      <Button size="lg" variant="primary" className="w-full sm:w-auto font-bold py-3 px-8" onClick={onStart}>
+      <Button className="w-full sm:w-auto font-bold py-2 px-6 bg-border-subtle hover:bg-border-strong text-primary rounded-md" onClick={onStart}>
         Start focus
       </Button>
     </Card>

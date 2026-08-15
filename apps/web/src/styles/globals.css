@@ -84,7 +84,7 @@ h3, .text-h3 {
 .text-primary { color: var(--text-primary); }
 .text-secondary { color: var(--text-secondary); }
 .text-muted { color: var(--text-muted); }
-.text-accent { color: var(--accent-blue-light); }
+.text-accent { color: var(--primary-light); }
 .text-error { color: var(--status-error-text); }
 .text-warning { color: var(--status-warning-text); }
 .text-success { color: var(--status-success-text); }

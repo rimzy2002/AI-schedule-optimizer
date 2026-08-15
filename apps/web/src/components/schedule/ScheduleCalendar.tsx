@@ -21,12 +21,18 @@ export const ScheduleCalendar: React.FC<ScheduleCalendarProps> = ({ blocks }) =>
   });
 
   const orderedDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const currentDayName = days[new Date().getDay()];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
       {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => (
         <Card key={day} className="p-4 min-h-[300px] flex flex-col">
-          <h3 className="font-bold text-primary text-center mb-4 pb-2 border-b border-subtle">{day}</h3>
+          <h3 
+            className="font-bold text-center mb-4 pb-2 border-b border-subtle"
+            style={{ color: day === currentDayName ? 'var(--primary)' : 'var(--text-primary)' }}
+          >
+            {day}
+          </h3>
           <div className="flex flex-col gap-2 flex-1">
             {groupedBlocks[day]?.length > 0 ? (
               groupedBlocks[day].map((block, i) => (

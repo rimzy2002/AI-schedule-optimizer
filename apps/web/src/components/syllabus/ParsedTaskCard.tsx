@@ -32,14 +32,14 @@ export const ParsedTaskCard: React.FC<ParsedTaskCardProps> = ({ task, onEdit }) 
         <div className="text-sm text-secondary mt-2 flex gap-6">
           <span>{task.weight}%</span>
           <span>{formatDate(task.deadline)}</span>
-          <span className="text-muted capitalize">{task.type}</span>
+          <span className="capitalize" style={{ color: 'var(--primary)' }}>{task.type}</span>
         </div>
       </div>
       <div className="flex items-center gap-4">
         <Badge variant={getBadgeVariant(task.status)}>
           {task.status}
         </Badge>
-        <Button variant="outline" size="sm" onClick={onEdit}>
+        <Button variant="secondary" size="sm" onClick={onEdit}>
           Edit
         </Button>
       </div>
