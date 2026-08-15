@@ -1,39 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ParsedTask } from '../types';
 import { ParsedTaskList } from '../components/syllabus/ParsedTaskList';
 import { Button } from '../components/ui/Button';
 import './ReviewTasksPage.css';
 
-// Mock initial data if none provided via router state
-const mockTasks: ParsedTask[] = [
-  { id: '1', name: 'Midterm Exam', type: 'exam', weight: 25, deadline: '2023-10-14T00:00:00Z', status: 'Ready' },
-  { id: '2', name: 'Research Essay', type: 'assignment', weight: 30, deadline: '2023-10-29T00:00:00Z', status: 'Ready' },
-  { id: '3', name: 'Quiz 3', type: 'quiz', weight: 10, deadline: null, status: 'CHECK DATE' },
-];
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const ReviewTasksPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as { syllabusId?: string, proposedSyllabus?: ParsedTask[], courseName?: string } | null;
+  const state = location.state as { courseId?: string, syllabusId?: string } | null;
   
-  const syllabusId = state?.syllabusId || '';
-  const courseName = state?.courseName || '';
-  const [tasks, setTasks] = useState<ParsedTask[]>(state?.proposedSyllabus || mockTasks);
+  const courseId = state?.courseId;
+  const syllabusId = state?.syllabusId;
+  
+  const [tasks, setTasks] = useState<ParsedTask[]>([]);
+  const [courseName, setCourseName] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!courseId) {
+      setError('No course selected');
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchCourseData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/courses/${courseId}`);
+        if (!res.ok) throw new Error('Failed to fetch course');
+        const data = await res.json();
+        setCourseName(data.title);
+        
+        const loadedTasks = data.tasks.map((t: any) => {
+          let status = 'Ready';
+          if (!t.deadline) status = 'CHECK DATE';
+          else if (t.weight == null || t.weight === 0) status = 'MISSING WEIGHT';
+          
+          return {
+            id: t.id,
+            name: t.title,
+            type: t.type || 'other',
+            weight: t.weight,
+            deadline: t.deadline,
+            status
+          };
+        });
+        setTasks(loadedTasks);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCourseData();
+  }, [courseId]);
 
   const hasErrors = tasks.some(t => t.status !== 'Ready' && t.status !== 'NEW');
 
   const handleConfirm = async () => {
-    if (hasErrors) return;
+    if (hasErrors || !courseId) return;
     
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/tasks/confirm', {
+      // 1. Confirm and save tasks
+      const res = await fetch(`${API_URL}/tasks/confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          syllabusId,
+          courseId,
           tasks: tasks.map(t => ({
             name: t.name,
             type: t.type,
@@ -43,18 +82,41 @@ export const ReviewTasksPage: React.FC = () => {
         })
       });
 
-      if (res.ok) {
-        navigate('/schedule', { state: { syllabusId } });
-      } else {
-        alert('Failed to confirm tasks');
+      if (!res.ok) {
+        throw new Error('Failed to confirm tasks');
       }
-    } catch (e) {
+
+      // 2. Generate Schedule
+      const scheduleRes = await fetch(`${API_URL}/schedule/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId })
+      });
+
+      if (!scheduleRes.ok) {
+        throw new Error('Failed to generate schedule');
+      }
+
+      const scheduleData = await scheduleRes.json();
+      
+      // 3. Navigate to schedule page
+      navigate('/schedule', { state: { scheduleId: scheduleData.id, courseId } });
+      
+    } catch (e: any) {
       console.error(e);
-      alert('Error connecting to server');
+      alert(e.message || 'Error connecting to server');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return <div className="p-8 text-center">Loading tasks...</div>;
+  }
+
+  if (error) {
+    return <div className="p-8 text-center text-red-500">{error}</div>;
+  }
 
   return (
     <div className="review-page">
@@ -67,7 +129,6 @@ export const ReviewTasksPage: React.FC = () => {
       </div>
 
       <div className="review-content">
-        {/* We could add the Summary Box here if needed: "6 tasks extracted • 1 date needs review" */}
         <div className="review-summary-box mb-6">
           <div className="flex items-center gap-2">
             <span className="text-success">✓</span>
@@ -90,7 +151,7 @@ export const ReviewTasksPage: React.FC = () => {
             onClick={handleConfirm}
             disabled={hasErrors || isSubmitting || tasks.length === 0}
           >
-            {isSubmitting ? 'Confirming...' : 'Confirm Tasks & Generate Schedule'}
+            {isSubmitting ? 'Generating Schedule...' : 'Confirm Tasks & Generate Schedule'}
           </Button>
           {hasErrors && (
             <p className="text-sm text-warning mt-2 flex items-center gap-2">

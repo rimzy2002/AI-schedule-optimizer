@@ -3,7 +3,14 @@ import { prisma } from '@ai-schedule-optimizer/database';
 import { startFocusSessionSchema } from '../schemas/focus.schema';
 import { asyncHandler } from '../utils/asyncHandler';
 
-const getUserId = () => 'user-1'; // Mock user
+const getUserId = async (req: Request) => {
+  let userId = (req as any).user?.id;
+  if (!userId) {
+    const mockUser = await prisma.user.findFirst();
+    if (mockUser) userId = mockUser.id;
+  }
+  return userId;
+};
 
 export const startFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const result = startFocusSessionSchema.safeParse(req.body);
@@ -13,7 +20,8 @@ export const startFocusSession = asyncHandler(async (req: Request, res: Response
   }
 
   const { studyBlockId, taskId, plannedMinutes } = result.data;
-  const userId = getUserId();
+  const userId = await getUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
   if (studyBlockId) {
     const block = await prisma.studyBlock.findUnique({ where: { id: studyBlockId, user_id: userId } });
@@ -39,7 +47,8 @@ export const startFocusSession = asyncHandler(async (req: Request, res: Response
 
 export const pauseFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = getUserId();
+  const userId = await getUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   
   const session = await prisma.focusSession.findUnique({ where: { id, user_id: userId } });
   if (!session) {
@@ -60,7 +69,8 @@ export const pauseFocusSession = asyncHandler(async (req: Request, res: Response
 
 export const resumeFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = getUserId();
+  const userId = await getUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   
   const session = await prisma.focusSession.findUnique({ where: { id, user_id: userId } });
   if (!session || !session.paused_at) {
@@ -85,7 +95,8 @@ export const resumeFocusSession = asyncHandler(async (req: Request, res: Respons
 
 export const completeFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = getUserId();
+  const userId = await getUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
   
   const session = await prisma.focusSession.findUnique({ where: { id, user_id: userId } });
   if (!session) {
@@ -139,7 +150,8 @@ export const completeFocusSession = asyncHandler(async (req: Request, res: Respo
 
 export const getFocusSession = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = getUserId();
+  const userId = await getUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
   const session = await prisma.focusSession.findUnique({ where: { id, user_id: userId } });
   
@@ -149,4 +161,32 @@ export const getFocusSession = asyncHandler(async (req: Request, res: Response) 
   }
   
   res.json(session);
+});
+
+export const getNextStudyBlock = asyncHandler(async (req: Request, res: Response) => {
+  const userId = await getUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  const block = await prisma.studyBlock.findFirst({
+    where: {
+      user_id: userId,
+      status: { not: 'completed' }
+    },
+    orderBy: { start_time: 'asc' },
+    include: { task: true, course: true }
+  });
+
+  res.json(block || null);
+});
+
+export const getStudyBlock = asyncHandler(async (req: Request, res: Response) => {
+  const userId = await getUserId(req);
+  if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+  const block = await prisma.studyBlock.findUnique({
+    where: { id: req.params.id, user_id: userId },
+    include: { task: true, course: true }
+  });
+
+  res.json(block || null);
 });

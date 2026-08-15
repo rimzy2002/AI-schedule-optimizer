@@ -3,8 +3,12 @@ import { prisma } from '@ai-schedule-optimizer/database';
 import { asyncHandler } from '../utils/asyncHandler';
 
 export const getTodayDashboard = asyncHandler(async (req: Request, res: Response) => {
-  // Mock user for now since auth isn't fully wired in every route for this MVP
-  const userId = 'user-1';
+  let userId = (req as any).user?.id;
+  if (!userId) {
+    const mockUser = await prisma.user.findFirst();
+    if (mockUser) userId = mockUser.id;
+    else return res.status(401).json({ error: 'Unauthorized' });
+  }
 
   const todayStart = new Date();
   todayStart.setUTCHours(0, 0, 0, 0);
@@ -23,6 +27,7 @@ export const getTodayDashboard = asyncHandler(async (req: Request, res: Response
     },
     include: {
       task: true,
+      course: true,
     },
     orderBy: {
       start_time: 'asc',
@@ -38,7 +43,7 @@ export const getTodayDashboard = asyncHandler(async (req: Request, res: Response
   
   const upcomingDeadlines = await prisma.task.findMany({
     where: {
-      syllabus: {
+      course: {
         user_id: userId,
       },
       deadline: {
@@ -48,6 +53,9 @@ export const getTodayDashboard = asyncHandler(async (req: Request, res: Response
       status: {
         not: 'completed'
       }
+    },
+    include: {
+      course: true,
     },
     orderBy: {
       deadline: 'asc',

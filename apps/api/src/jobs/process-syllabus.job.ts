@@ -1,5 +1,8 @@
 export interface ProcessSyllabusJobData {
   rawText: string;
+  userId: string;
+  courseId: string;
+  syllabusId: string;
 }
 
 export interface ProcessSyllabusJobResult {

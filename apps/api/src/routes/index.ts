@@ -7,6 +7,7 @@ import taskRoutes from './task.routes';
 import scheduleRoutes from './schedule.routes';
 import dashboardRoutes from './dashboard.routes';
 import focusRoutes from './focus.routes';
+import coursesRoutes from './courses.routes';
 
 const router = Router();
 
@@ -33,5 +34,6 @@ router.use('/tasks', taskRoutes);
 router.use('/schedule', scheduleRoutes);
 router.use('/dashboard', dashboardRoutes);
 router.use('/focus', focusRoutes);
+router.use('/courses', coursesRoutes);
 
 export default router;

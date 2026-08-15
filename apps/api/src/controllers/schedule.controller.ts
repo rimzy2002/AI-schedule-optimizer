@@ -2,59 +2,86 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { schedulerService } from '../services/scheduling/scheduler.service';
 import { asyncHandler } from '../utils/asyncHandler';
+import { prisma } from '@ai-schedule-optimizer/database';
 
-const generatePreviewSchema = z.object({
-  syllabusId: z.string().uuid('Invalid syllabus ID'),
+const generateSchema = z.object({
+  courseId: z.string().uuid('Invalid course ID'),
 });
 
-const acceptScheduleSchema = z.object({
-  blocks: z.array(z.object({
-    taskId: z.string().uuid(),
-    taskTitle: z.string(),
-    start: z.string().datetime(),
-    end: z.string().datetime(),
-  })).min(1, 'At least one block is required'),
-});
-
-export const generatePreview = asyncHandler(async (req: Request, res: Response) => {
-  let userId = req.user?.id as string;
+export const generateSchedule = asyncHandler(async (req: Request, res: Response) => {
+  let userId = (req as any).user?.id;
   if (!userId) {
     const mockUser = await prisma.user.findFirst();
     if (mockUser) userId = mockUser.id;
     else return res.status(401).json({ error: 'Unauthorized' });
   }
   
-  const result = generatePreviewSchema.safeParse(req.body);
+  const result = generateSchema.safeParse(req.body);
   if (!result.success) {
-    res.status(400).json({ error: 'Invalid input', details: result.error.format() });
-    return;
+    return res.status(400).json({ error: 'Invalid input', details: result.error.format() });
   }
 
-  const preview = await schedulerService.generatePreview(userId, result.data.syllabusId);
-  res.json(preview);
+  const { courseId } = result.data;
+  
+  // Verify course ownership
+  const course = await prisma.course.findUnique({ where: { id: courseId, user_id: userId } });
+  if (!course) {
+    return res.status(404).json({ error: 'Course not found' });
+  }
+
+  // Generate and save schedule
+  const schedule = await schedulerService.generateAndSaveSchedule(userId, courseId);
+  res.status(201).json(schedule);
 });
 
-export const acceptSchedule = asyncHandler(async (req: Request, res: Response) => {
-  let userId = req.user?.id as string;
+export const getLatestSchedule = asyncHandler(async (req: Request, res: Response) => {
+  let userId = (req as any).user?.id;
   if (!userId) {
     const mockUser = await prisma.user.findFirst();
     if (mockUser) userId = mockUser.id;
     else return res.status(401).json({ error: 'Unauthorized' });
   }
-  
-  const result = acceptScheduleSchema.safeParse(req.body);
-  if (!result.success) {
-    res.status(400).json({ error: 'Invalid input', details: result.error.format() });
-    return;
+
+  const schedule = await prisma.schedule.findFirst({
+    where: { user_id: userId },
+    orderBy: { created_at: 'desc' },
+    include: {
+      studyBlocks: {
+        orderBy: { start_time: 'asc' },
+        include: { task: true, course: true }
+      }
+    }
+  });
+
+  if (!schedule) {
+    return res.status(404).json({ error: 'No schedules found' });
   }
 
-  // Convert string dates back to Date objects
-  const blocks = result.data.blocks.map(b => ({
-    ...b,
-    start: new Date(b.start),
-    end: new Date(b.end),
-  }));
+  res.json(schedule);
+});
 
-  const count = await schedulerService.acceptSchedule(userId, blocks);
-  res.status(201).json({ message: 'Schedule accepted', count });
+export const getSchedule = asyncHandler(async (req: Request, res: Response) => {
+  let userId = (req as any).user?.id;
+  if (!userId) {
+    const mockUser = await prisma.user.findFirst();
+    if (mockUser) userId = mockUser.id;
+    else return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  const { id } = req.params;
+  const schedule = await prisma.schedule.findUnique({
+    where: { id, user_id: userId },
+    include: {
+      studyBlocks: {
+        orderBy: { start_time: 'asc' },
+        include: { task: true, course: true }
+      }
+    }
+  });
+
+  if (!schedule) {
+    return res.status(404).json({ error: 'Schedule not found' });
+  }
+
+  res.json(schedule);
 });

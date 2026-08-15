@@ -14,7 +14,9 @@ model User {
   created_at     DateTime        @default(now())
   updated_at     DateTime        @updatedAt
 
+  courses        Course[]
   syllabi        Syllabus[]
+  schedules      Schedule[]
   calendarEvents CalendarEvent[]
   studyBlocks    StudyBlock[]
   focusSessions  FocusSession[]
@@ -23,14 +25,38 @@ model User {
   @@map("users")
 }
 
-model Syllabus {
+model Course {
   id          String   @id @default(uuid())
   user_id     String
-  course_name String
+  title       String
+  code        String?
+  description String?
+  semester    String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
   user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  syllabi     Syllabus[]
+  tasks       Task[]
+  studyBlocks StudyBlock[]
+  schedules   Schedule[]
+
+  @@map("courses")
+}
+
+model Syllabus {
+  id              String   @id @default(uuid())
+  user_id         String
+  course_id       String?
+  course_name     String
+  filename        String?
+  extracted_text  String?  @db.LongText
+  analysis_status String   @default("pending")
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course      Course?  @relation(fields: [course_id], references: [id], onDelete: Cascade)
   tasks       Task[]
 
   @@map("syllabi")
@@ -38,18 +64,37 @@ model Syllabus {
 
 model Task {
   id          String   @id @default(uuid())
-  syllabus_id String
+  syllabus_id String?
+  course_id   String?
   title       String
+  type        String?
   deadline    DateTime?
   weight      Float?
   status      String   @default("pending")
+  needs_review Boolean @default(true)
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  syllabus    Syllabus @relation(fields: [syllabus_id], references: [id], onDelete: Cascade)
+  syllabus    Syllabus? @relation(fields: [syllabus_id], references: [id], onDelete: Cascade)
+  course      Course?   @relation(fields: [course_id], references: [id], onDelete: Cascade)
   studyBlocks StudyBlock[]
 
   @@map("tasks")
+}
+
+model Schedule {
+  id         String   @id @default(uuid())
+  user_id    String
+  course_id  String?
+  status     String   @default("active")
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user        User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  course      Course?      @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  studyBlocks StudyBlock[]
+
+  @@map("schedules")
 }
 
 model CalendarEvent {
@@ -67,18 +112,22 @@ model CalendarEvent {
 }
 
 model StudyBlock {
-  id         String   @id @default(uuid())
-  user_id    String
-  task_id    String?
-  title      String
-  start_time DateTime
-  end_time   DateTime
-  status     String   @default("pending")
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id          String   @id @default(uuid())
+  user_id     String
+  schedule_id String?
+  task_id     String?
+  course_id   String?
+  title       String
+  start_time  DateTime
+  end_time    DateTime
+  status      String   @default("pending")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  task       Task?    @relation(fields: [task_id], references: [id], onDelete: SetNull)
+  user          User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  schedule      Schedule?    @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
+  task          Task?        @relation(fields: [task_id], references: [id], onDelete: SetNull)
+  course        Course?      @relation(fields: [course_id], references: [id], onDelete: Cascade)
   focusSessions FocusSession[]
 
   @@map("study_blocks")

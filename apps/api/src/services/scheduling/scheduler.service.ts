@@ -7,13 +7,13 @@ import { studyBlockService } from './study-block.service';
 export class SchedulerService {
   
   /**
-   * Generates a schedule preview without saving to the database.
+   * Generates a schedule and saves it to the database.
    */
-  async generatePreview(userId: string, syllabusId: string) {
+  async generateAndSaveSchedule(userId: string, courseId: string) {
     const tasks = await prisma.task.findMany({
       where: { 
-        syllabus_id: syllabusId,
-        syllabus: { user_id: userId }
+        course_id: courseId,
+        course: { user_id: userId }
       }
     });
 
@@ -50,22 +50,39 @@ export class SchedulerService {
       searchStart
     );
 
+    // Create a new Schedule record
+    const schedule = await prisma.schedule.create({
+      data: {
+        user_id: userId,
+        course_id: courseId,
+        status: 'active',
+      }
+    });
+
+    // Save StudyBlocks to the database
+    if (scheduled.length > 0) {
+      await prisma.studyBlock.createMany({
+        data: scheduled.map(block => ({
+          user_id: userId,
+          schedule_id: schedule.id,
+          course_id: courseId,
+          task_id: block.taskId,
+          title: `Study: ${block.taskTitle}`,
+          start_time: block.start,
+          end_time: block.end,
+          status: 'pending',
+        }))
+      });
+    }
+
     return {
-      scheduled,
-      unallocated,
+      id: schedule.id,
       metrics: {
         totalBlocks: scheduled.length,
         deadlinesCovered: [...new Set(scheduled.map(s => s.taskId))].length,
+        unallocatedTasks: unallocated.length
       }
     };
-  }
-
-  /**
-   * Accepts a schedule and saves it to the database.
-   */
-  async acceptSchedule(userId: string, blocks: ScheduledBlock[]) {
-    const count = await studyBlockService.saveBlocks(userId, blocks);
-    return count;
   }
 }
 

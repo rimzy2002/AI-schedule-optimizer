@@ -31,18 +31,33 @@ export class SyllabiController {
 
     const { rawText } = result.data;
 
-    // Create a new Syllabus record in the database
-    const syllabus = await prisma.syllabus.create({
+    // Create a new Course and Syllabus record in the database
+    const course = await prisma.course.create({
       data: {
         user_id: userId,
-        course_name: 'Imported Syllabus',
+        title: 'Imported Syllabus',
       }
     });
 
-    const job = await syllabusQueue.add('process-syllabus', { rawText });
+    const syllabus = await prisma.syllabus.create({
+      data: {
+        user_id: userId,
+        course_id: course.id,
+        course_name: 'Imported Syllabus',
+        extracted_text: rawText,
+      }
+    });
+
+    const job = await syllabusQueue.add('process-syllabus', { 
+      rawText,
+      userId,
+      courseId: course.id,
+      syllabusId: syllabus.id
+    });
 
     res.status(202).json({
       jobId: job.id,
+      courseId: course.id,
       syllabusId: syllabus.id,
       status: 'queued',
     });

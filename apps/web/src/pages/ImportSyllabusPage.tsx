@@ -10,6 +10,7 @@ export const ImportSyllabusPage: React.FC = () => {
   const [step, setStep] = useState<'input' | 'processing' | 'error'>('input');
   const [jobId, setJobId] = useState<string | null>(null);
   const [syllabusId, setSyllabusId] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -31,6 +32,7 @@ export const ImportSyllabusPage: React.FC = () => {
       const data = await response.json();
       setJobId(data.jobId);
       setSyllabusId(data.syllabusId);
+      setCourseId(data.courseId);
       
     } catch (err: any) {
       console.error(err);
@@ -50,22 +52,8 @@ export const ImportSyllabusPage: React.FC = () => {
         const data = await response.json();
 
         if (data.status === 'completed') {
-          // Success! Redirect to review page with proposed tasks in state
-          // For now, we mock the transition by logging and maybe showing an alert,
-          // as the "Review Page" is not fully spec'd for Day 2 yet.
-          console.log('Parsed tasks (Proposed State):', data.result);
-          const proposedTasks = (data.result?.tasks || []).map((t: any, i: number) => {
-            let status = 'Ready';
-            if (!t.deadline) status = 'CHECK DATE';
-            else if (t.weight == null || t.weight === 0) status = 'MISSING WEIGHT';
-            
-            return {
-              ...t,
-              id: t.id || `task-${i}-${Date.now()}`,
-              status
-            };
-          });
-          navigate('/review', { state: { proposedSyllabus: proposedTasks, courseName: data.result?.course, syllabusId } });
+          // Success! Redirect to review page
+          navigate('/review', { state: { courseId, syllabusId } });
         } else if (data.status === 'failed') {
           throw new Error('AI analysis failed. Please try a different text or format.');
         }
