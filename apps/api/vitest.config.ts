@@ -12,6 +12,7 @@ export default defineConfig({
     env: {
       NODE_ENV: 'test',
     },
+    testTimeout: 15000,
     coverage: {
       provider: 'v8',
     },

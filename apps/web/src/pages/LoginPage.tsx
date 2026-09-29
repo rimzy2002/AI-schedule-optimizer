@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Card } from '../components/ui/Card';
+import { AuthLayout } from '../components/layout/AuthLayout';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { BrainCircuit } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, Loader2 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -16,83 +17,110 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as any)?.from?.pathname || '/';
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     setError(null);
     setIsSubmitting(true);
 
     try {
       await login(email, password);
       navigate(from, { replace: true });
-    } catch (err: any) {
-      setError(err.message || 'Login failed. Please check your credentials.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Login failed. Please check your credentials.';
+      setError(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 bg-background">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-primary text-white mb-4 shadow-sm">
-            <BrainCircuit size={32} />
-          </div>
-          <h1 className="text-3xl font-bold text-primary">Welcome Back</h1>
-          <p className="text-secondary text-sm mt-1">Sign in to manage your study schedule and focus goals</p>
+    <AuthLayout
+      title="Welcome back"
+      subtitle="Sign in to continue your study plan."
+    >
+      {error && (
+        <div id="login-error-alert" role="alert" aria-live="assertive" className="auth-alert auth-alert-error">
+          <AlertCircle size={18} className="auth-alert-icon" />
+          <span className="auth-alert-message">{error}</span>
         </div>
+      )}
 
-        <Card className="p-8 shadow-sm">
-          {error && (
-            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
-              {error}
-            </div>
+      <form onSubmit={handleSubmit} className="auth-form" noValidate={false}>
+        <Input
+          id="login-email"
+          name="email"
+          label="Email address"
+          type="email"
+          placeholder="name@example.com"
+          autoComplete="username"
+          required
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            if (error) setError(null);
+          }}
+          disabled={isSubmitting}
+        />
+
+        <Input
+          id="login-password"
+          name="password"
+          label="Password"
+          type={showPassword ? 'text' : 'password'}
+          placeholder="••••••••"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            if (error) setError(null);
+          }}
+          disabled={isSubmitting}
+          rightElement={
+            <button
+              type="button"
+              className="auth-visibility-btn"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+              aria-controls="login-password"
+              tabIndex={0}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          }
+        />
+
+        <Button
+          id="login-submit-button"
+          type="submit"
+          variant="primary"
+          fullWidth
+          size="lg"
+          disabled={isSubmitting}
+          className="auth-submit-btn"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="auth-spinner" size={18} />
+              <span>Signing in...</span>
+            </>
+          ) : (
+            'Sign in'
           )}
+        </Button>
+      </form>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <Input
-              id="login-email"
-              label="Email Address"
-              type="email"
-              placeholder="name@example.com"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-
-            <Input
-              id="login-password"
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <div className="mt-2">
-              <Button
-                id="login-submit-button"
-                type="submit"
-                variant="primary"
-                fullWidth
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Signing in...' : 'Sign In'}
-              </Button>
-            </div>
-          </form>
-
-          <div className="mt-6 text-center text-sm text-secondary">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-semibold text-primary hover:underline">
-              Create an account
-            </Link>
-          </div>
-        </Card>
-      </div>
-    </div>
+      <footer className="auth-footer">
+        <span>New here?</span>
+        <Link to="/register" className="auth-footer-link">
+          Create an account
+        </Link>
+      </footer>
+    </AuthLayout>
   );
 };

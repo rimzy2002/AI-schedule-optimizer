@@ -5,6 +5,7 @@
 @import './components/layout/AppLayout.css';
 @import './components/layout/Header.css';
 @import './components/layout/Sidebar.css';
+@import './components/layout/AuthLayout.css';
 
 @import './components/ui/Button.css';
 @import './components/ui/Card.css';
