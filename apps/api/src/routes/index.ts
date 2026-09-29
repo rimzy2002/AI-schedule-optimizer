@@ -8,6 +8,9 @@ import scheduleRoutes from './schedule.routes';
 import dashboardRoutes from './dashboard.routes';
 import focusRoutes from './focus.routes';
 import coursesRoutes from './courses.routes';
+import settingsRoutes from './settings.routes';
+
+import { requireAuth } from '../middleware/auth.middleware';
 
 const router = Router();
 
@@ -29,11 +32,12 @@ router.get('/health/database', asyncHandler(async (req: Request, res: Response) 
 
 // API Routes
 router.use('/auth', authRoutes);
-router.use('/syllabi', syllabusRoutes);
-router.use('/tasks', taskRoutes);
-router.use('/schedule', scheduleRoutes);
-router.use('/dashboard', dashboardRoutes);
-router.use('/focus', focusRoutes);
-router.use('/courses', coursesRoutes);
+router.use('/syllabi', requireAuth, syllabusRoutes);
+router.use('/tasks', requireAuth, taskRoutes);
+router.use('/schedule', requireAuth, scheduleRoutes);
+router.use('/dashboard', requireAuth, dashboardRoutes);
+router.use('/focus', requireAuth, focusRoutes);
+router.use('/courses', requireAuth, coursesRoutes);
+router.use('/settings', requireAuth, settingsRoutes);
 
 export default router;

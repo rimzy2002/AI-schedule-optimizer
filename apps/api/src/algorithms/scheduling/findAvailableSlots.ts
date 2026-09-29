@@ -1,44 +1,50 @@
 import { TimeInterval } from './detectOverlap';
+import { getZonedDateParts, zonedTimeToUtc } from './timezone';
 
 export interface DailySchedule {
-  startHour: number; // e.g. 9 for 09:00
+  startHour: number; // e.g. 8 for 08:00
   endHour: number;   // e.g. 22 for 22:00
 }
 
 /**
  * Finds available slots between a given start time (e.g. now) and an end time (e.g. deadline),
- * taking into account daily working hours and existing busy intervals.
+ * taking into account daily working hours in a specific timezone and existing busy intervals.
  * 
- * Slots are returned in chronological order. For backward scheduling, they might be processed in reverse.
+ * Boundaries are converted to UTC Date instances for storage and comparisons, keeping behavior
+ * fully independent of the server's local timezone.
  */
 export function findAvailableSlots(
   searchStart: Date,
   searchEnd: Date,
   busyIntervals: TimeInterval[],
-  dailySchedule: DailySchedule = { startHour: 8, endHour: 22 }
+  dailySchedule: DailySchedule = { startHour: 8, endHour: 22 },
+  timeZone: string = 'Asia/Colombo'
 ): TimeInterval[] {
   const availableSlots: TimeInterval[] = [];
   
   // Sort busy intervals chronologically
   const sortedBusy = [...busyIntervals].sort((a, b) => a.start.getTime() - b.start.getTime());
 
-  // Iterate day by day
-  let currentDay = new Date(searchStart);
-  currentDay.setUTCHours(0, 0, 0, 0);
-  
-  const endDay = new Date(searchEnd);
-  endDay.setUTCHours(0, 0, 0, 0);
+  // Determine local date bounds in the study timezone
+  const startParts = getZonedDateParts(searchStart, timeZone);
+  const endParts = getZonedDateParts(searchEnd, timeZone);
 
-  while (currentDay <= endDay) {
-    const slotStart = new Date(currentDay);
-    slotStart.setUTCHours(dailySchedule.startHour, 0, 0, 0);
-    
-    const slotEnd = new Date(currentDay);
-    slotEnd.setUTCHours(dailySchedule.endHour, 0, 0, 0);
+  // Iterate day by day in local calendar date
+  const currentLocal = new Date(Date.UTC(startParts.year, startParts.month - 1, startParts.day));
+  const endLocal = new Date(Date.UTC(endParts.year, endParts.month - 1, endParts.day));
+
+  while (currentLocal <= endLocal) {
+    const year = currentLocal.getUTCFullYear();
+    const month = currentLocal.getUTCMonth() + 1;
+    const day = currentLocal.getUTCDate();
+
+    // Construct local daily window converted to UTC
+    const slotStart = zonedTimeToUtc(year, month, day, dailySchedule.startHour, 0, 0, timeZone);
+    const slotEnd = zonedTimeToUtc(year, month, day, dailySchedule.endHour, 0, 0, timeZone);
 
     // Adjust for search bounds
-    let actualStart = new Date(Math.max(slotStart.getTime(), searchStart.getTime()));
-    let actualEnd = new Date(Math.min(slotEnd.getTime(), searchEnd.getTime()));
+    const actualStart = new Date(Math.max(slotStart.getTime(), searchStart.getTime()));
+    const actualEnd = new Date(Math.min(slotEnd.getTime(), searchEnd.getTime()));
 
     if (actualStart < actualEnd) {
       // Find busy intervals that overlap with this day's slot
@@ -59,7 +65,7 @@ export function findAvailableSlots(
       }
     }
 
-    currentDay.setDate(currentDay.getDate() + 1);
+    currentLocal.setUTCDate(currentLocal.getUTCDate() + 1);
   }
 
   return availableSlots;

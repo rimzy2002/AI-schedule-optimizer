@@ -1,4 +1,3 @@
-import { prisma } from '@ai-schedule-optimizer/database';
 import { TimeInterval, detectOverlap } from '../../algorithms/scheduling/detectOverlap';
 import { availabilityService } from './availability.service';
 

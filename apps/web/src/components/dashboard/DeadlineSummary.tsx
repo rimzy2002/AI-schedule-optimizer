@@ -7,10 +7,22 @@ interface DeadlineTask {
   id: string;
   title: string;
   deadline: string;
+  is_date_only?: boolean;
+  course?: {
+    title?: string;
+  };
 }
 
 export const DeadlineSummary: React.FC<{ deadlines: DeadlineTask[] }> = ({ deadlines }) => {
   const navigate = useNavigate();
+
+  const parseDeadline = (deadlineStr: string) => {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(deadlineStr)) {
+      const [y, m, d] = deadlineStr.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+    return new Date(deadlineStr);
+  };
 
   if (deadlines.length === 0) {
     return (
@@ -19,12 +31,17 @@ export const DeadlineSummary: React.FC<{ deadlines: DeadlineTask[] }> = ({ deadl
           <h3 className="text-h3 font-bold text-primary mb-6">Upcoming deadlines</h3>
           <div className="mb-6">
             <h4 className="font-bold text-primary mb-1">You're all caught up! 🎉</h4>
-            <p className="text-secondary text-sm">No upcoming deadlines.</p>
+            <p className="text-secondary text-sm">No upcoming deadlines within the next 7 days.</p>
           </div>
         </div>
-        <Button className="font-bold py-2 px-6 bg-border-subtle hover:bg-border-strong text-primary rounded-md" onClick={() => navigate('/import')}>
-          Add a course
-        </Button>
+        <div className="flex gap-3">
+          <Button className="font-bold py-2 px-6 bg-border-subtle hover:bg-border-strong text-primary rounded-md" onClick={() => navigate('/courses')}>
+            View Courses
+          </Button>
+          <Button className="font-bold py-2 px-6 bg-border-subtle hover:bg-border-strong text-primary rounded-md" onClick={() => navigate('/import')}>
+            Add Course
+          </Button>
+        </div>
       </Card>
     );
   }
@@ -32,35 +49,41 @@ export const DeadlineSummary: React.FC<{ deadlines: DeadlineTask[] }> = ({ deadl
   return (
     <Card className="bg-surface border-subtle border p-6 h-full flex flex-col justify-between">
       <div>
-        <h3 className="text-h3 font-bold text-primary mb-6">Upcoming deadlines</h3>
-        <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-h3 font-bold text-primary">Upcoming deadlines</h3>
+          <span className="text-xs text-secondary">Next 7 days</span>
+        </div>
+        <div className="flex flex-col gap-5">
           {deadlines.map((task, index) => {
-            const due = new Date(task.deadline);
+            const due = parseDeadline(task.deadline);
             const today = new Date();
-            const diffDays = Math.round((due.getTime() - today.getTime()) / 86400000);
+            today.setHours(0, 0, 0, 0);
+            const dueDayStart = new Date(due.getFullYear(), due.getMonth(), due.getDate());
+            const diffDays = Math.round((dueDayStart.getTime() - today.getTime()) / 86400000);
             
-            let dueText = '';
-            
-            if (diffDays === 0) {
-              dueText = 'Today';
-            } else if (diffDays === 1) {
-              dueText = 'Tomorrow';
-            } else {
+            const dueText = (() => {
+              if (diffDays < 0) return 'Overdue';
+              if (diffDays === 0) return 'Today';
+              if (diffDays === 1) return 'Tomorrow';
               const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-              if (diffDays < 7) {
-                dueText = days[due.getDay()];
-              } else {
-                dueText = `In ${diffDays} days`;
-              }
-            }
+              if (diffDays < 7) return days[due.getDay()];
+              return `In ${diffDays} days`;
+            })();
+
+            const isTimed = !task.is_date_only && task.deadline.includes('T');
+            const timeStr = isTimed ? due.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '';
 
             return (
-              <div key={task.id} className="flex flex-col">
+              <div key={task.id} className="flex flex-col pb-3 border-b border-subtle last:border-b-0 last:pb-0">
                 <span className="font-semibold text-primary text-sm mb-1">
                   {index + 1}. {task.title}
                 </span>
-                <span className="text-xs text-secondary">
-                  {dueText} • Course
+                <span className="text-xs text-secondary flex items-center gap-2">
+                  <span className={diffDays <= 1 ? 'font-semibold text-amber-600' : ''}>
+                    {dueText} {timeStr ? `at ${timeStr}` : ''}
+                  </span>
+                  <span>•</span>
+                  <span>{task.course?.title || 'Course'}</span>
                 </span>
               </div>
             );

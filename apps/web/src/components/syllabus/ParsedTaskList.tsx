@@ -6,10 +6,11 @@ import { Button } from '../ui/Button';
 
 interface ParsedTaskListProps {
   tasks: ParsedTask[];
+  courseId?: string;
   onTasksChange: (tasks: ParsedTask[]) => void;
 }
 
-export const ParsedTaskList: React.FC<ParsedTaskListProps> = ({ tasks, onTasksChange }) => {
+export const ParsedTaskList: React.FC<ParsedTaskListProps> = ({ tasks, courseId, onTasksChange }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -24,7 +25,7 @@ export const ParsedTaskList: React.FC<ParsedTaskListProps> = ({ tasks, onTasksCh
   };
 
   const handleAddTask = (newTask: ParsedTask) => {
-    onTasksChange([...tasks, { ...newTask, status: 'NEW' }]);
+    onTasksChange([...tasks, { ...newTask, status: 'Ready' }]);
     setIsAdding(false);
   };
 
@@ -35,6 +36,7 @@ export const ParsedTaskList: React.FC<ParsedTaskListProps> = ({ tasks, onTasksCh
           {editingId === task.id ? (
             <TaskReviewForm
               task={task}
+              courseId={courseId}
               onSave={handleUpdateTask}
               onCancel={() => setEditingId(null)}
               onDelete={() => handleDeleteTask(task.id)}
@@ -50,6 +52,7 @@ export const ParsedTaskList: React.FC<ParsedTaskListProps> = ({ tasks, onTasksCh
 
       {isAdding ? (
         <TaskReviewForm
+          courseId={courseId}
           onSave={handleAddTask}
           onCancel={() => setIsAdding(false)}
         />

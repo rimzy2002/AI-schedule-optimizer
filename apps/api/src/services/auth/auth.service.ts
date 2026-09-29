@@ -49,7 +49,7 @@ export const login = async (email: string, passwordRaw: string) => {
 export const getMe = async (id: string) => {
   const user = await userRepository.findUserById(id);
   if (!user) {
-    throw new AppError('User not found', 404);
+    throw new AppError('User not found', 401);
   }
   return { id: user.id, email: user.email };
 };

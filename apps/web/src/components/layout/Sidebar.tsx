@@ -17,7 +17,7 @@ export const Sidebar: React.FC = () => {
         <NavLink to="/schedule" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <Calendar size={20} /> Schedule
         </NavLink>
-        <NavLink to="/review" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+        <NavLink to="/courses" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
           <BookOpen size={20} /> Courses
         </NavLink>
         <NavLink to="/focus" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>

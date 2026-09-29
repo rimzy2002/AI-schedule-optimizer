@@ -4,11 +4,18 @@ import { useNavigate } from 'react-router-dom';
 interface SyllabusInputProps {
   onAnalyze: (text: string) => void;
   isLoading: boolean;
+  initialText?: string;
 }
 
-export const SyllabusInput: React.FC<SyllabusInputProps> = ({ onAnalyze, isLoading }) => {
-  const [text, setText] = useState('');
+export const SyllabusInput: React.FC<SyllabusInputProps> = ({ onAnalyze, isLoading, initialText = '' }) => {
+  const [text, setText] = useState(initialText);
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (initialText && !text) {
+      setText(initialText);
+    }
+  }, [initialText]);
 
   return (
     <div className="flex flex-col h-full">

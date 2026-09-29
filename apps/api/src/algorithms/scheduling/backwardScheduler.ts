@@ -14,14 +14,16 @@ export function backwardSchedule(
   tasks: SchedulableTask[],
   busyIntervals: TimeInterval[],
   scheduleStart: Date,
-  dailySchedule: DailySchedule = { startHour: 8, endHour: 22 }
+  dailySchedule: DailySchedule = { startHour: 8, endHour: 22 },
+  timeZone: string = 'Asia/Colombo',
+  maxSessionDuration: number = 120
 ): { scheduled: ScheduledBlock[], unallocated: { taskId: string, unallocatedMinutes: number }[] } {
   
   const scheduled: ScheduledBlock[] = [];
   const unallocated: { taskId: string, unallocatedMinutes: number }[] = [];
   
   // Clone busy intervals since we will add to them as we schedule blocks
-  let currentBusy = [...busyIntervals];
+  const currentBusy = [...busyIntervals];
 
   // 1. Prioritize tasks
   const prioritized = calculatePriority(tasks);
@@ -29,18 +31,17 @@ export function backwardSchedule(
   for (const task of prioritized) {
     if (task.requiredStudyMinutes <= 0) continue;
 
-    // Split task into blocks
-    const blocks = splitStudyTime(task.requiredStudyMinutes);
+    // Split task into blocks respecting maxSessionDuration
+    const blocks = splitStudyTime(task.requiredStudyMinutes, 30, maxSessionDuration);
     let taskUnallocated = 0;
 
     // Use deadline as the search end. If no deadline, use some arbitrary max future date, e.g. 30 days.
     const searchEnd = task.deadline ? new Date(task.deadline) : new Date(scheduleStart.getTime() + 30 * 24 * 60 * 60 * 1000);
     
     // We process blocks from last to first to place them as close to the deadline as possible
-    // Wait, it's better to just place blocks backward from the deadline.
     for (const block of blocks) {
       // Re-calculate available slots because currentBusy has been updated
-      const available = findAvailableSlots(scheduleStart, searchEnd, currentBusy, dailySchedule);
+      const available = findAvailableSlots(scheduleStart, searchEnd, currentBusy, dailySchedule, timeZone);
       
       // We want to schedule backward, so look at the latest available slots first
       let scheduledBlock = false;

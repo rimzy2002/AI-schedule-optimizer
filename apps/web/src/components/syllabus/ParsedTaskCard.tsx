@@ -12,10 +12,17 @@ interface ParsedTaskCardProps {
 export const ParsedTaskCard: React.FC<ParsedTaskCardProps> = ({ task, onEdit }) => {
   const isError = task.status !== 'Ready' && task.status !== 'NEW';
   
-  const formatDate = (isoStr: string | null) => {
-    if (!isoStr) return 'N/A';
-    const d = new Date(isoStr);
-    return d.toLocaleDateString(undefined, { month: 'short', day: '2-digit', timeZone: 'UTC' });
+  const formatDate = (t: ParsedTask) => {
+    if (!t.deadline) return 'N/A';
+    const isDateOnly = t.is_date_only ?? t.isDateOnly ?? /^\d{4}-\d{2}-\d{2}$/.test(t.deadline);
+    const d = new Date(t.deadline);
+    if (isNaN(d.getTime())) return 'N/A';
+    const dateStr = d.toLocaleDateString(undefined, { month: 'short', day: '2-digit', timeZone: 'UTC' });
+    if (isDateOnly) {
+      return dateStr;
+    }
+    const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', timeZone: 'UTC', hourCycle: 'h23' });
+    return `${dateStr} ${timeStr} UTC`;
   };
 
   const getBadgeVariant = (status: string) => {
@@ -30,8 +37,8 @@ export const ParsedTaskCard: React.FC<ParsedTaskCardProps> = ({ task, onEdit }) 
       <div className="flex-1">
         <h4 className="text-body font-semibold text-primary">{task.name}</h4>
         <div className="text-sm text-secondary mt-2 flex gap-6">
-          <span>{task.weight}%</span>
-          <span>{formatDate(task.deadline)}</span>
+          <span>{task.weight !== null && task.weight !== undefined ? `${task.weight}%` : (task.estimated_duration ? `${task.estimated_duration}m` : 'Ungraded')}</span>
+          <span>{formatDate(task)}</span>
           <span className="capitalize" style={{ color: 'var(--primary)' }}>{task.type}</span>
         </div>
       </div>

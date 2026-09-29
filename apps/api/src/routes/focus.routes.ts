@@ -6,11 +6,13 @@ import {
   completeFocusSession,
   getFocusSession,
   getNextStudyBlock,
-  getStudyBlock
+  getStudyBlock,
+  getActiveFocusSession
 } from '../controllers/focus.controller';
 
 const router = Router();
 
+router.get('/active', getActiveFocusSession);
 router.get('/next-block', getNextStudyBlock);
 router.get('/block/:id', getStudyBlock);
 

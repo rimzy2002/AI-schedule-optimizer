@@ -6,10 +6,11 @@ import { AppError } from '../utils/AppError';
 export interface AuthRequest extends Request {
   user?: {
     id: string;
+    email?: string;
   };
 }
 
-export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const requireAuth = (req: AuthRequest, _res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -19,10 +20,10 @@ export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction)
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, env.jwtSecret) as { id: string };
-    req.user = { id: decoded.id };
+    const decoded = jwt.verify(token, env.jwtSecret) as { id: string; email?: string };
+    req.user = { id: decoded.id, email: decoded.email };
     next();
-  } catch (err) {
+  } catch (_err) {
     return next(new AppError('Invalid or expired token', 401));
   }
 };

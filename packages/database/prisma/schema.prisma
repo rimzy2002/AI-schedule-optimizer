@@ -21,6 +21,7 @@ model User {
   studyBlocks    StudyBlock[]
   focusSessions  FocusSession[]
   focusMetrics   FocusMetric[]
+  settings       UserSettings?
 
   @@map("users")
 }
@@ -29,17 +30,17 @@ model Course {
   id          String   @id @default(uuid())
   user_id     String
   title       String
-  code        String?
-  description String?
+  course_code String?
+  instructor  String?
   semester    String?
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 
-  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
   syllabi     Syllabus[]
   tasks       Task[]
-  studyBlocks StudyBlock[]
   schedules   Schedule[]
+  studyBlocks StudyBlock[]
 
   @@map("courses")
 }
@@ -48,9 +49,9 @@ model Syllabus {
   id              String   @id @default(uuid())
   user_id         String
   course_id       String?
-  course_name     String
+  course_name     String?
   filename        String?
-  extracted_text  String?  @db.LongText
+  extracted_text  String   @db.LongText
   analysis_status String   @default("pending")
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
@@ -63,17 +64,22 @@ model Syllabus {
 }
 
 model Task {
-  id          String   @id @default(uuid())
-  syllabus_id String?
-  course_id   String?
-  title       String
-  type        String?
-  deadline    DateTime?
-  weight      Float?
-  status      String   @default("pending")
-  needs_review Boolean @default(true)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id                 String    @id @default(uuid())
+  syllabus_id        String?
+  course_id          String?
+  title              String
+  type               String?
+  deadline           DateTime?
+  is_date_only       Boolean   @default(false)
+  weight             Float?
+  estimated_duration Int?
+  description        String?   @db.Text
+  recurring          Boolean   @default(false)
+  status             String    @default("pending")
+  needs_review       Boolean   @default(true)
+  version            Int       @default(1)
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
 
   syllabus    Syllabus? @relation(fields: [syllabus_id], references: [id], onDelete: Cascade)
   course      Course?   @relation(fields: [course_id], references: [id], onDelete: Cascade)
@@ -147,21 +153,25 @@ model FocusSession {
   accumulated_pause Int      @default(0)
   created_at        DateTime @default(now())
 
-  user           User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  studyBlock     StudyBlock? @relation(fields: [study_block_id], references: [id], onDelete: SetNull)
+  user           User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  studyBlock     StudyBlock?   @relation(fields: [study_block_id], references: [id], onDelete: SetNull)
+  focusMetrics   FocusMetric[]
 
   @@map("focus_sessions")
 }
 
 model FocusMetric {
-  id         String   @id @default(uuid())
+  id         String        @id @default(uuid())
   user_id    String
+  session_id String?
   metric_key String
   value      Float
-  created_at DateTime @default(now())
+  created_at DateTime      @default(now())
 
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  session    FocusSession? @relation(fields: [session_id], references: [id], onDelete: Cascade)
 
+  @@unique([session_id, metric_key])
   @@map("focus_metrics")
 }
 
@@ -173,4 +183,19 @@ model JobRecord {
   updated_at DateTime @updatedAt
 
   @@map("job_records")
+}
+
+model UserSettings {
+  id                   String   @id @default(uuid())
+  user_id              String   @unique
+  timezone             String   @default("Asia/Colombo")
+  start_hour           Int      @default(8)
+  end_hour             Int      @default(22)
+  max_session_duration Int      @default(90)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+
+  user                 User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
 }

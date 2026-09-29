@@ -24,7 +24,7 @@ export class SyllabusParserService {
       return validatedSyllabus;
     } catch (error: any) {
       console.error('Failed to parse or validate Gemini response:', error);
-      throw new Error(`AI processing failed: ${error.message}`);
+      throw new Error(`AI processing failed: ${error.message}`, { cause: error });
     }
   }
 }

@@ -11,20 +11,14 @@ interface FocusTimerProps {
 export const FocusTimer: React.FC<FocusTimerProps> = ({
   plannedMinutes, status, startedAt, pausedAt, accumulatedPause
 }) => {
-  const [remaining, setRemaining] = useState(plannedMinutes * 60);
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(plannedMinutes * 60);
 
   useEffect(() => {
-    if (status === 'IDLE') {
-      setRemaining(plannedMinutes * 60);
+    if (status === 'IDLE' || status === 'COMPLETED') {
       return;
     }
 
-    if (status === 'COMPLETED') {
-      setRemaining(0);
-      return;
-    }
-
-    const interval = setInterval(() => {
+    const updateTimer = () => {
       if (!startedAt) return;
       
       const start = new Date(startedAt).getTime();
@@ -40,12 +34,16 @@ export const FocusTimer: React.FC<FocusTimerProps> = ({
       const elapsedSeconds = Math.floor((now - start) / 1000) - totalPause;
       
       const newRemaining = Math.max(0, durationSeconds - elapsedSeconds);
-      setRemaining(newRemaining);
-    }, 1000);
+      setSecondsRemaining(newRemaining);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
 
     return () => clearInterval(interval);
   }, [status, startedAt, pausedAt, accumulatedPause, plannedMinutes]);
 
+  const remaining = status === 'IDLE' ? plannedMinutes * 60 : (status === 'COMPLETED' ? 0 : secondsRemaining);
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
 

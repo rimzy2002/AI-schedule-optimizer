@@ -10,17 +10,31 @@ interface TimelineBlock {
   status: string;
 }
 
-export const TodayTimeline: React.FC<{ blocks: TimelineBlock[] }> = ({ blocks }) => {
+interface TodayTimelineProps {
+  blocks: TimelineBlock[];
+  hasUpcoming?: boolean;
+}
+
+export const TodayTimeline: React.FC<TodayTimelineProps> = ({ blocks, hasUpcoming }) => {
   const navigate = useNavigate();
   
   if (blocks.length === 0) {
     return (
-      <div className="bg-surface border border-subtle rounded-lg p-12 text-center flex flex-col items-center justify-center">
+      <div className="bg-surface border border-subtle rounded-lg p-8 text-center flex flex-col items-center justify-center">
         <h3 className="text-h3 font-bold text-primary mb-2">No study sessions scheduled today.</h3>
-        <p className="text-secondary mb-6">Your day is currently free.</p>
-        <Button className="font-bold py-2 px-6 bg-border-subtle hover:bg-border-strong text-primary rounded-md" onClick={() => navigate('/schedule')}>
-          Plan a session
-        </Button>
+        <p className="text-secondary mb-6 text-sm max-w-sm">
+          {hasUpcoming
+            ? "Your day is free today. Your future study sessions and deadlines are tracked in your schedule."
+            : "Your day is currently free. Review your courses or import a syllabus to schedule study time."}
+        </p>
+        <div className="flex flex-wrap gap-3 justify-center">
+          <Button className="font-bold py-2 px-5 bg-border-subtle hover:bg-border-strong text-primary rounded-md" onClick={() => navigate('/schedule')}>
+            View Full Schedule
+          </Button>
+          <Button className="font-bold py-2 px-5 bg-surface border border-subtle hover:bg-surface-hover text-secondary rounded-md" onClick={() => navigate('/courses')}>
+            View All Courses
+          </Button>
+        </div>
       </div>
     );
   }

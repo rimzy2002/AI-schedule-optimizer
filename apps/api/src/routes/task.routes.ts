@@ -1,9 +1,11 @@
 import { Router } from 'express';
-import { confirmTasks, updateTask } from '../controllers/task.controller';
+import { createTask, updateTask, deleteTask, confirmTasks } from '../controllers/task.controller';
 
 const router = Router();
 
+router.post('/', createTask);
 router.patch('/:id', updateTask);
+router.delete('/:id', deleteTask);
 router.post('/confirm', confirmTasks);
 
 export default router;

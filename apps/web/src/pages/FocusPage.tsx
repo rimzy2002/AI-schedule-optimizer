@@ -1,36 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { FocusTimer } from '../components/focus/FocusTimer';
 import { TimerControls } from '../components/focus/TimerControls';
 import { FocusTaskCard } from '../components/focus/FocusTaskCard';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { apiClient } from '../services/apiClient';
 
 export const FocusPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const studyBlock = location.state?.studyBlock;
+  const initialStudyBlock = location.state?.studyBlock;
 
-  // Fallback if no study block
-  const blockDurationMins = studyBlock 
-    ? Math.round((new Date(studyBlock.end_time).getTime() - new Date(studyBlock.start_time).getTime()) / 60000) 
-    : 25;
-
+  const [studyBlock, setStudyBlock] = useState<any>(initialStudyBlock || null);
   const [session, setSession] = useState<any>(null);
   const [status, setStatus] = useState<'IDLE' | 'ACTIVE' | 'PAUSED' | 'COMPLETED'>('IDLE');
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Restore active session on mount / refresh, or load next study block if available
+  useEffect(() => {
+    let isMounted = true;
+
+    const initFocusState = async () => {
+      try {
+        const active = await apiClient.get('/focus/active');
+        if (isMounted && active) {
+          setSession(active);
+          setStatus(active.status);
+          if (active.studyBlock) {
+            setStudyBlock(active.studyBlock);
+          }
+          return;
+        }
+
+        // If no active session and no passed block, load next study block
+        if (isMounted && !initialStudyBlock) {
+          const next = await apiClient.get('/focus/next-block');
+          if (isMounted && next) {
+            setStudyBlock(next);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to initialize focus state', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    initFocusState();
+    return () => { isMounted = false; };
+  }, [initialStudyBlock]);
+
+  // Duration computation supporting both CalendarBlock and Database StudyBlock shapes
+  const startIso = studyBlock?.start_time || studyBlock?.start;
+  const endIso = studyBlock?.end_time || studyBlock?.end;
+  const computedMins = (startIso && endIso)
+    ? Math.round((new Date(endIso).getTime() - new Date(startIso).getTime()) / 60000)
+    : 0;
+
+  const blockDurationMins = session?.planned_minutes || (computedMins > 0 ? computedMins : 25);
+
+  const displayTitle = 
+    studyBlock?.taskTitle || 
+    studyBlock?.task?.title || 
+    studyBlock?.title || 
+    'Study Session';
 
   const handleStart = async () => {
     try {
-      const res = await fetch('/api/focus/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          studyBlockId: studyBlock?.id,
-          taskId: studyBlock?.task_id,
-          plannedMinutes: blockDurationMins,
-        })
+      const data = await apiClient.post('/focus/start', {
+        studyBlockId: studyBlock?.id,
+        taskId: studyBlock?.task_id || studyBlock?.taskId || studyBlock?.task?.id,
+        plannedMinutes: blockDurationMins,
       });
-      const data = await res.json();
       setSession(data);
       setStatus('ACTIVE');
     } catch (e) {
@@ -41,8 +83,7 @@ export const FocusPage: React.FC = () => {
   const handlePause = async () => {
     if (!session) return;
     try {
-      const res = await fetch(`/api/focus/${session.id}/pause`, { method: 'PATCH' });
-      const data = await res.json();
+      const data = await apiClient.patch(`/focus/${session.id}/pause`);
       setSession(data);
       setStatus('PAUSED');
     } catch (e) {
@@ -53,8 +94,7 @@ export const FocusPage: React.FC = () => {
   const handleResume = async () => {
     if (!session) return;
     try {
-      const res = await fetch(`/api/focus/${session.id}/resume`, { method: 'PATCH' });
-      const data = await res.json();
+      const data = await apiClient.patch(`/focus/${session.id}/resume`);
       setSession(data);
       setStatus('ACTIVE');
     } catch (e) {
@@ -65,9 +105,8 @@ export const FocusPage: React.FC = () => {
   const handleComplete = async () => {
     if (!session) return;
     try {
-      await fetch(`/api/focus/${session.id}/complete`, { method: 'PATCH' });
+      await apiClient.patch(`/focus/${session.id}/complete`);
       setStatus('COMPLETED');
-      // Navigate back to dashboard after a short delay
       setTimeout(() => {
         navigate('/');
       }, 1500);
@@ -107,7 +146,7 @@ export const FocusPage: React.FC = () => {
         <Card className="flex flex-col items-center p-10">
           <div className="w-full mb-10">
             <FocusTaskCard 
-              title={studyBlock?.title || 'Ad-hoc Study Session'} 
+              title={displayTitle} 
             />
           </div>
           
